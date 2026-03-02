@@ -456,3 +456,14 @@ Week 5 → 直接跳 Week 6
 既然你有 SAA，你最近有在 Github 上部署過任何使用 Lambda、Terraform 或 Kubernetes (EKS) 的自動化架構嗎？ 這才是讓 ASML 或 Google HR 眼睛發亮的關鍵證據。
 
 
+
+
+筆記
+
+
+Repository 就是 crud
+service 呼叫 Repository
+synchronized 在 K8s/微服務環境下是沒用的。
+
+
+

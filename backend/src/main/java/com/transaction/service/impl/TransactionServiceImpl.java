@@ -25,6 +25,9 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     public TransactionResponse createTransaction(CreateTransactionRequest request) {
 
+//        我設計了 idempotency key + DB unique constraint，
+//就算同時兩個 pod 收到同樣請求，也只會成功一筆。
+
         // 1️⃣ Idempotency check
         Optional<Transaction> existing =
                 repository.findByIdempotencyKey(request.getIdempotencyKey());

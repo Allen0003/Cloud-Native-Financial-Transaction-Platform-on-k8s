@@ -8,9 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
 @RestController
-// 1. 強制讓 Spring 去找你的 Repository 介面
 @EnableJpaRepositories(basePackages = "com.transaction.domain.repository")
-// 2. 強制讓 Spring 去找你的 Entity (資料表對應類)
 @EntityScan(basePackages = "com.transaction.domain.entity")
 public class FinancialTransactionApplication {
 

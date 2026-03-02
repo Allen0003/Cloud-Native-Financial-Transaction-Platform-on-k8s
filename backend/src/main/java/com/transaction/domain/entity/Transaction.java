@@ -8,8 +8,8 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity // <--- 必須要有這行！
-@Table(name = "transactions") // 選配：指定資料表名稱
+@Entity
+@Table(name = "transactions")
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
