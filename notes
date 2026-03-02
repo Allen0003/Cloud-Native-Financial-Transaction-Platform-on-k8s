@@ -449,10 +449,10 @@ Week 5 → 直接跳 Week 6
 
 
 
+設計 高可用性（99.999%）、低延遲（<50ms） 的分散式交易架構，處理每秒 10k+ TPS 的負載。這就是台積電要的「大專案」。
 
 
 
-
-
+既然你有 SAA，你最近有在 Github 上部署過任何使用 Lambda、Terraform 或 Kubernetes (EKS) 的自動化架構嗎？ 這才是讓 ASML 或 Google HR 眼睛發亮的關鍵證據。
 
 
