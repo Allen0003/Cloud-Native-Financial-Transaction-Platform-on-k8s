@@ -39,6 +39,7 @@ Transaction API (Stateless Pods)
 RDS MySQL (Primary / Replica)
    ↓
 Batch Settlement Service
+
 🚀 Core Features
 1️⃣ Transaction API (Stateless Design)
 
@@ -66,6 +67,7 @@ Demo scenario:
 
 curl → API works
 kill pod → API still works
+
 2️⃣ Financial Batch Settlement System
 
 Simulates real financial daily settlement.
@@ -182,17 +184,11 @@ Failure recovery strategy
 Production thinking
 
 🛠 Tech Stack
-Layer	Technology
-Cloud	AWS
-K8s	EKS
-Backend	Spring Boot
-Database	RDS MySQL
-CI/CD	GitHub Actions
-Container	Docker
-🧪 Failure Scenarios Covered
-Scenario	Result
-Kill pod	Auto-recovery, no downtime
-Deploy bad version	Blocked by readiness
-Batch crash	Restart without double count
-DB timeout	Retry & graceful failure
-High traffic	HPA scaling
+| Layer     | Technology     |
+| --------- | -------------- |
+| Cloud     | AWS            |
+| K8s       | EKS            |
+| Backend   | Spring Boot    |
+| Database  | RDS MySQL      |
+| CI/CD     | GitHub Actions |
+| Container | Docker         |
