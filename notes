@@ -1,0 +1,406 @@
+
+
+
+
+二、系統架構（你講 20 分鐘的骨架）
+
+你要能畫出這張架構圖（重點不是畫圖，是故事線）👇
+
+🧱 架構元件
+
+1️⃣ API Service（Java Spring Boot）
+
+模擬交易 / 下單 / 查詢
+
+Stateless
+
+Horizontal scalable
+
+2️⃣ Batch Service
+
+每日結算 / 對帳
+
+會故意設計成「可能失敗」
+
+3️⃣ Database
+
+RDS / Cloud SQL（主從）
+
+只讓一個 batch pod 寫
+
+4️⃣ Message Queue（選一個）
+
+SQS / PubSub / Kafka（簡化版也可）
+
+解耦即時與批次
+
+5️⃣ Kubernetes（EKS / GKE）
+
+HPA
+
+readiness / liveness
+
+rolling update
+
+6️⃣ CI/CD
+
+push → test → build → deploy
+
+可 rollback
+
+
+
+
+三、這個專案「一定要刻意設計的 5 種災難」
+
+⚠️ 這是整個專案的靈魂
+你不是怕事故，你是主動設計事故
+
+☠️ 災難 1：Pod 掛掉
+
+kill -9 container
+
+模擬 OOM
+
+👉 你要能講：
+
+k8s 怎麼自救
+
+使用者感覺到什麼
+
+哪裡完全沒感覺
+
+☠️ 災難 2：Batch 跑一半掛
+
+中途 crash
+
+重跑會不會 double count？
+
+👉 你要講：
+
+idempotent 設計
+
+checkpoint
+
+怎麼避免金融災難
+
+☠️ 災難 3：DB 短暫不可用
+
+模擬連線 timeout
+
+👉 你要講：
+
+retry / backoff
+
+circuit breaker
+
+為什麼不無限 retry
+
+☠️ 災難 4：Rolling update 出包
+
+新版有 bug
+
+👉 你要講：
+
+readiness 阻擋流量
+
+rollback 策略
+
+什麼情況「立刻停更」
+
+☠️ 災難 5：流量突然放大
+
+壓測
+
+HPA scale out
+
+👉 你要講：
+
+指標選擇（CPU vs QPS）
+
+scale 太快 vs 太慢的風險
+
+四、你 20 分鐘怎麼講（時間分配）
+🕰️ 建議節奏
+
+1️⃣ 問題背景（2 分）
+2️⃣ 為什麼這樣設計（5 分）
+3️⃣ 架構與 trade-off（5 分）
+4️⃣ 災難演練（6 分）
+5️⃣ 如果重來一次（2 分）
+
+👉 面試官通常會在 災難那段插話
+這代表他開始「把你當同事」
+
+五、你「一定要準備的金句」（台積愛聽）
+
+你之後可以自然地說這種話：
+
+「我假設系統一定會掛，所以我先設計 recovery」
+
+「我選擇犧牲一點效能，換穩定性」
+
+「這個地方我刻意做保守，因為是金融場景」
+
+這些不是技術，是責任感
+
+
+
+
+
+
+
+🧭 專案總名（你之後履歷可用）
+
+Cloud-Native Financial Transaction Platform on k8s
+
+🗓️ Week 0（過年前 1–2 天，可選）
+
+目標：準備戰場，不寫太多 code
+
+建 GitHub Repo（README 先空也沒關係）
+
+決定 Cloud：AWS
+
+決定 k8s：EKS
+
+確定技術棧：
+
+Spring Boot
+
+MySQL (RDS)
+
+GitHub Actions
+
+👉 這週不做完也沒關係，只是讓你過年直接開幹。
+
+🟩 Week 1｜核心服務跑起來（基礎盤）
+🎯 目標
+
+👉 一個「可以交易的系統」跑在 k8s 上
+
+📦 要完成的東西
+
+Spring Boot API
+
+create transaction
+
+query transaction
+
+Stateless 設計
+
+Dockerfile
+
+EKS cluster 起來
+
+Deployment + Service
+
+readiness / liveness probe
+
+🔥 面試可講的點
+
+為什麼服務要 stateless
+
+readiness 跟 liveness 差在哪
+
+pod 掛掉使用者有沒有感覺
+
+✅ 完成定義
+curl 打 API → 回資料 → kill pod → API 還活著
+
+
+
+
+🟩 Week 2｜資料庫 + 批次（金融味出來）
+🎯 目標
+
+👉 「這不是玩具，是金融系統」
+
+📦 要完成的東西
+
+RDS MySQL（主從）
+
+DB schema（交易 / 結算）
+
+Batch Service
+
+每日結算
+
+故意設計「可能失敗」
+
+DB connection pool
+
+batch 只允許單一 pod 寫
+
+🔥 面試可講的點
+
+為什麼 batch 要 idempotent
+
+batch 跑一半掛怎麼辦
+
+為什麼不讓多 pod 同時跑 batch
+
+✅ 完成定義
+batch crash → restart → 不 double count
+
+這邊還要搞 java 多執行緒 看看用 nosql or zookeeper 去試看看
+
+
+
+
+
+
+🟩 Week 3｜CI/CD + Rolling Update（像真的在上線）
+🎯 目標
+
+👉 「我不是手動 deploy 的人」
+
+📦 要完成的東西
+
+GitHub Actions
+
+build
+
+test
+
+docker push
+
+deploy to EKS
+
+rolling update
+
+rollback
+
+🔥 面試可講的點
+
+為什麼不用一次全換
+
+readiness 怎麼擋壞版
+
+什麼情況要 rollback
+
+✅ 完成定義
+壞版 deploy → 流量沒進來 → rollback 成功
+
+
+
+
+
+
+
+
+
+🟩 Week 4｜災難演練（整個專案靈魂）
+🎯 目標
+
+👉 讓系統「真的掛給你看」
+
+📦 要完成的東西
+
+kill pod / OOM
+
+DB timeout
+
+batch crash
+
+流量壓測
+
+HPA
+
+🔥 面試可講的點
+
+哪個災難最危險
+
+哪個最容易被忽略
+
+你做了哪些取捨
+
+✅ 完成定義
+你可以「預測」系統會怎麼反應
+
+
+
+
+
+
+
+
+
+
+🟩 Week 5｜觀測性 + 收尾（把你變成「可用的人」）
+🎯 目標
+
+👉 讓面試官覺得：這人上線後找得到問題
+
+📦 要完成的東西
+
+basic logging
+
+metrics（簡單就好）
+
+health dashboard（可陽春）
+
+README 完整說故事
+
+🔥 面試可講的點
+
+沒監控會發生什麼事
+
+你怎麼判斷「現在要不要救」
+
+✅ 完成定義
+你能回答：「系統慢了，我先看哪？」
+
+
+
+
+
+
+
+
+🟩 Week 6｜面試化（非常重要）
+🎯 目標
+
+👉 把工程專案轉成「20 分鐘故事」
+
+📦 要完成的東西
+
+一頁架構圖
+
+事故故事腳本
+
+履歷 bullet points
+
+🔥 面試可講的點
+
+如果重來你會改什麼
+
+哪個決定最保守
+
+哪個決定最冒險
+
+🔥 如果你只有 4 週（過年爆肝版）
+
+合併 Week 1 + 2
+
+合併 Week 3 + 4
+
+Week 5 → 直接跳 Week 6
+
+👉 災難演練一定不能砍
+
+最後說一句很重要的話
+
+這個專案不是拿來炫技
+是拿來證明：
+「你不是來學的，是來扛的」
+
+如果你願意，下一步我可以：
+1️⃣ 幫你畫 架構圖草稿（面試用）
+2️⃣ 幫你寫 README 故事版模板
+3️⃣ 幫你在每週結束「模擬面試官追問」
+
+你選一個，我陪你一路做到投履歷那天。
+
+
+這是我要做的 先幫我用 README
