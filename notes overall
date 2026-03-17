@@ -458,7 +458,7 @@ Week 5 → 直接跳 Week 6
 
 
 
-筆記
+***** 筆記 ******
 
 
 Repository 就是 crud
@@ -467,73 +467,7 @@ synchronized 在 K8s/微服務環境下是沒用的。
 
 actuator  是 spring 內建的 health endpoint。
 
+我會用 settlement_batch 表來代表每日結算，並用 batch_date 做 unique constraint，確保 batch idempotency，避免同一天重複結算。
 
 
 
-
-
-
-
------------ 2026.03.16
-
-🟢 Step 3（Week 1 收尾）
-
-寫 Dockerfile
-
-讓 service 可以 containerize。
-
-技術：
-
-Docker
-
-🟢 Step 4（Week 2）
-
-開始 金融味最重的部分
-
-Batch Settlement。
-
-會新增：
-
-settlement_batch
-daily_balance
-
-然後做：
-
-每日結算
-
-還會故意讓它 crash。
-
-🧠 我建議你現在先做這 3 件事
-
-順序：
-
-1️⃣ 測試 idempotency
-
-確保：
-
-相同 key 不會新增交易
-2️⃣ 寫 query API
-GET /transactions/{id}
-3️⃣ commit 第一個 milestone
-
-Git commit：
-
-feat: implement idempotent transaction API with optimistic locking
-🚀 如果你願意，我可以幫你
-
-直接把專案升級兩個等級：
-
-我幫你設計 真正金融級 idempotency pattern：
-
-現在版本：
-
-transaction table
-
-升級版：
-
-idempotency table
-transaction table
-
-這是 Stripe / PayPal 風格設計。
-
-面試官看到會很有感。
