@@ -19,16 +19,27 @@ financial-transaction-service/
 │   │   │               │
 │   │   │               ├── service/
 │   │   │               │     ├── TransactionService.java
+│	│	│				│	  ├── SettlementService.java
+│	│	│				│	  │
 │   │   │               │     └── impl/
-│   │   │               │           └── TransactionServiceImpl.java
+│   │   │               │           ├── TransactionServiceImpl.java
+│	│	│				│			└── SettlementServiceImpl.java
 │   │   │               │
 │   │   │               ├── domain/
 │   │   │               │     ├── entity/
-│   │   │               │     │     └── Transaction.java
+│   │   │               │     │     ├── Transaction.java
+│	│	│				│	  │		├── SettlementBatch.java
+│	│	│				│	  │		└── SettlementItem.java
+│	│	│				│	  │
 │   │   │               │     ├── repository/
-│   │   │               │     │     └── TransactionRepository.java
+│   │   │               │     │     ├── TransactionRepository.java
+│	│	│				│	  │		├── SettlementBatchRepository.java
+│	│	│				│	  │		└── SettlementItemRepository.java
+│	│	│				│	  │
 │   │   │               │     └── enums/
-│   │   │               │           └── TransactionStatus.java
+│   │   │               │           ├── TransactionStatus.java
+│	│	│				│			├── SettlementBatchStatus.java
+│	│	│				│			└── SettlementItemStatus.java
 │   │   │               │
 │   │   │               ├── dto/
 │   │   │               │     ├── request/

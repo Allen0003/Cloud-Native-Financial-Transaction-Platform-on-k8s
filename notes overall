@@ -470,4 +470,7 @@ actuator  是 spring 內建的 health endpoint。
 我會用 settlement_batch 表來代表每日結算，並用 batch_date 做 unique constraint，確保 batch idempotency，避免同一天重複結算。
 
 
+domain → 資料 & DB
+service → 商業邏輯
+batch → orchestration（排程 / 流程控制）
 

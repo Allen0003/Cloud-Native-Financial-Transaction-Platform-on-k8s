@@ -1,0 +1,72 @@
+
+
+
+
+week2 prompt
+我正在做一個專案：
+
+Cloud-Native Financial Transaction Platform on Kubernetes
+
+目前進度（Week 1 已完成）：
+
+- Spring Boot transaction API
+- create transaction（含 idempotency key）
+- query transaction API
+- MySQL schema（transactions table）
+- TransactionStatus enum（含狀態流轉）
+- optimistic locking（@Version）
+- Spring Boot Actuator（readiness / liveness）
+- Dockerfile 已完成（可 container run）
+
+技術棧：
+- Java / Spring Boot
+- MySQL
+- Docker
+- 之後會上 AWS EKS + GitHub Actions
+
+現在我要開始 Week 2：
+
+🎯 目標：
+把系統升級成「金融系統」，加入 batch settlement
+
+我要你幫我一步一步完成：
+
+1️⃣ 設計 settlement 相關 DB schema（像銀行結算系統）
+2️⃣ 設計每日結算 batch flow（包含 failure scenario）
+3️⃣ 設計 idempotent batch（避免 double count）
+4️⃣ 設計 single-writer 機制（避免多 pod 同時跑）
+5️⃣ 實作 Spring Boot batch job（可以用 @Scheduled 或其他方式）
+6️⃣ 模擬 batch crash 並設計 recovery
+
+請用「面試導向」方式教我：
+- 每一步都解釋為什麼這樣設計
+- 補充面試可以怎麼講
+- 給我實作 code
+
+從 DB schema 設計開始。
+
+
+
+
+
+
+
+Happy Path（正常流程）
+
+[1] 建立 batch（PENDING）
+
+[2] 更新 batch → PROCESSING
+
+[3] 撈 transaction（未結算）
+
+[4] 寫入 settlement_item（PENDING）
+
+[5] 一筆一筆處理：
+      → SUCCESS / FAILED
+
+[6] 聚合結果：
+      → total_amount
+      → total_count
+
+[7] 更新 batch → COMPLETED
+
