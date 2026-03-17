@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.transaction.domain.entity.SettlementItem;
 
+import java.util.List;
+
 
 @Repository
 public interface SettlementItemRepository extends JpaRepository<SettlementItem, Long> {
@@ -22,4 +24,8 @@ public interface SettlementItemRepository extends JpaRepository<SettlementItem, 
         ON DUPLICATE KEY UPDATE transaction_id = transaction_id
     """, nativeQuery = true)
     int insertSettlementItems(@Param("batchId") Long batchId);
+
+
+    @Query("SELECT s FROM SettlementItem s WHERE s.batchId = :batchId AND s.status IN ('PENDING', 'FAILED')")
+    List<SettlementItem> findPendingItems(@Param("batchId") Long batchId);
 }
