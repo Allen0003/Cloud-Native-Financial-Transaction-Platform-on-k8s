@@ -3,23 +3,20 @@ package com.transaction.service.impl;
 import com.transaction.domain.entity.Transaction;
 import com.transaction.domain.enums.TransactionStatus;
 import com.transaction.domain.repository.TransactionRepository;
-import com.transaction.dto.response.TransactionResponse;
 import com.transaction.dto.request.CreateTransactionRequest;
+import com.transaction.dto.response.TransactionResponse;
 import com.transaction.service.TransactionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-    private final TransactionRepository repository;
-
-    public TransactionServiceImpl(TransactionRepository repository) {
-        this.repository = repository;
-    }
+    @Autowired
+    TransactionRepository repository;
 
     @Override
     @Transactional
@@ -57,7 +54,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public TransactionResponse getTransaction(String transactionId) {
-
         Transaction tx = repository.findByTransactionId(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 

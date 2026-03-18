@@ -5,7 +5,7 @@ import com.transaction.domain.entity.SettlementItem;
 import com.transaction.domain.repository.SettlementBatchRepository;
 import com.transaction.domain.repository.SettlementItemRepository;
 import com.transaction.service.SettlementService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,24 +17,19 @@ import java.util.Random;
 
 
 @Service
-
 public class SettlementServiceImpl implements SettlementService {
 
-    private final SettlementBatchRepository batchRepo;
-    private final SettlementItemRepository itemRepo;
+    @Autowired
+    SettlementBatchRepository batchRepo;
+
+    @Autowired
+    SettlementItemRepository itemRepo;
 
     private final Random random = new Random();
 
 
-    public SettlementServiceImpl(SettlementBatchRepository batchRepo, SettlementItemRepository itemRepo) {
-        this.batchRepo = batchRepo;
-        this.itemRepo = itemRepo;
-    }
-
-
     @Transactional
     public void runBatch(LocalDate date) {
-
         // 1️⃣ 建立或取得 batch（idempotent）
         SettlementBatch batch = batchRepo.findByBatchDate(date)
                 .orElseGet(() -> {
@@ -67,21 +62,16 @@ public class SettlementServiceImpl implements SettlementService {
 
 
     public void processItems(SettlementBatch batch) {
-
-        List<SettlementItem> items =
-                itemRepo.findPendingItems(batch.getId());
+        List<SettlementItem> items = itemRepo.findPendingItems(batch.getId());
 
         for (SettlementItem item : items) {
-            try {
-                // 模擬外部銀行 API
+            try {// 模擬外部銀行 API
                 boolean success = simulateExternalCall();
-
                 if (success) {
                     item.setStatus("SUCCESS");
                 } else {
                     item.setStatus("FAILED");
                 }
-
             } catch (Exception e) {
                 item.setStatus("FAILED");
             }
@@ -96,9 +86,7 @@ public class SettlementServiceImpl implements SettlementService {
     }
 
     public void finalizeBatch(SettlementBatch batch) {
-
-        List<SettlementItem> allItems =
-                itemRepo.findAll();
+        List<SettlementItem> allItems = itemRepo.findAll();
 
         BigDecimal total = allItems.stream()
                 .filter(i -> "SUCCESS".equals(i.getStatus()))

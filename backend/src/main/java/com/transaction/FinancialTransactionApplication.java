@@ -19,12 +19,5 @@ public class FinancialTransactionApplication {
         SpringApplication.run(FinancialTransactionApplication.class, args);
     }
 
-    @Bean
-    CommandLineRunner testRun(SettlementJob job) {
-        return args -> {
-            job.runManual();
-        };
-    }
-
 }
 
