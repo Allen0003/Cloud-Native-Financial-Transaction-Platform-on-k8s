@@ -17,7 +17,7 @@ import java.util.Random;
 
 
 @Service
-@RequiredArgsConstructor
+
 public class SettlementServiceImpl implements SettlementService {
 
     private final SettlementBatchRepository batchRepo;

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 
 @Component
-@RequiredArgsConstructor
+
 public class SettlementJob {
 
     private final SettlementService settlementService;
@@ -16,6 +16,11 @@ public class SettlementJob {
     public SettlementJob(SettlementService settlementService) {
         this.settlementService = settlementService;
     }
+
+    public void runManual() {
+        settlementService.runBatch(LocalDate.now());
+    }
+
 
     @Scheduled(cron = "0 0 2 * * ?")
     public void run() {
