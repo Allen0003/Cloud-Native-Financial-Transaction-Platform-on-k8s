@@ -2,10 +2,12 @@ package com.transaction.service.impl;
 
 import com.transaction.domain.entity.SettlementBatch;
 import com.transaction.domain.entity.SettlementItem;
+import com.transaction.domain.enums.SettlementStatus;
 import com.transaction.domain.repository.SettlementBatchRepository;
 import com.transaction.domain.repository.SettlementItemRepository;
 import com.transaction.service.SettlementService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,37 +29,57 @@ public class SettlementServiceImpl implements SettlementService {
 
     private final Random random = new Random();
 
-
     @Transactional
     public void runBatch(LocalDate date) {
-        // 1️⃣ 建立或取得 batch（idempotent）
-        SettlementBatch batch = batchRepo.findByBatchDate(date)
-                .orElseGet(() -> {
-                    SettlementBatch b = new SettlementBatch();
-                    b.setBatchDate(date);
-                    b.setStatus("PENDING");
-                    return batchRepo.save(b);
-                });
+        // 1. 確保基礎資料存在 (使用 Enum)
+        SettlementBatch batch = ensureBatchExists(date);
 
-        // 2️⃣ 如果已完成 → 直接跳過
-        if ("COMPLETED".equals(batch.getStatus())) {
+        // 2. 嘗試搶鎖 (原子操作：只有一個 Pod 能把 PENDING 改成 PROCESSING)
+        int updated = batchRepo.tryLockBatch(date);
+
+        if (updated == 0) {
             return;
         }
 
-        // 3️⃣ 更新為 PROCESSING
-        batch.setStatus("PROCESSING");
-        batch.setStartedAt(LocalDateTime.now());
-        batchRepo.save(batch);
+        // 3. 執行業務邏輯
+        try {
 
-        // 4️⃣ 寫入 settlement_item（idempotent）
-        itemRepo.insertSettlementItems(batch.getId());
 
-        // 5️⃣ TODO: 處理 item（下一步會做）
+            // 重新抓取最新狀態實體
+            SettlementBatch currentBatch = batchRepo.findByBatchDate(date).orElseThrow();
 
-        // 6️⃣ 更新 batch 完成
-        batch.setStatus("COMPLETED");
-        batch.setCompletedAt(LocalDateTime.now());
-        batchRepo.save(batch);
+            // 執行 idempotent 插入
+            itemRepo.insertSettlementItems(currentBatch.getId());
+
+            // TODO: 其他處理邏輯...
+
+            // 4. 更新為完成 (使用 Enum)
+            currentBatch.setStatus(SettlementStatus.COMPLETED.getCode());
+            currentBatch.setCompletedAt(LocalDateTime.now());
+            batchRepo.save(currentBatch);
+
+        } catch (Exception e) {
+            // 如果失敗，標記為 FAILED，以便後續人工排查或重試
+            batchRepo.findByBatchDate(date).ifPresent(b -> {
+                b.setStatus(SettlementStatus.FAILED.getCode());
+                batchRepo.save(b);
+            });
+            throw e;
+        }
+    }
+
+    private SettlementBatch ensureBatchExists(LocalDate date) {
+        try {
+            return batchRepo.findByBatchDate(date).orElseGet(() -> {
+                SettlementBatch b = new SettlementBatch();
+                b.setBatchDate(date);
+                b.setStatus(SettlementStatus.PENDING.getCode());
+                return batchRepo.saveAndFlush(b); // 強制寫入
+            });
+        } catch (DataIntegrityViolationException e) {
+            // 如果發生唯一鍵衝突，表示別的 Pod 搶先建好了，我們直接抓現成的
+            return batchRepo.findByBatchDate(date).orElseThrow();
+        }
     }
 
 
@@ -101,7 +123,6 @@ public class SettlementServiceImpl implements SettlementService {
         batch.setTotalCount((int) count);
         batch.setStatus("COMPLETED");
         batch.setCompletedAt(LocalDateTime.now());
-
         batchRepo.save(batch);
     }
 
