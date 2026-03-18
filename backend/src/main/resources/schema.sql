@@ -46,14 +46,14 @@ ALTER TABLE settlement_item ADD CONSTRAINT uk_txn UNIQUE (transaction_id);
 CREATE INDEX idx_batch_id ON settlement_item (batch_id);
 ALTER TABLE settlement_item ADD CONSTRAINT fk_batch FOREIGN KEY (batch_id) REFERENCES settlement_batch(id);
 
-/*
 
-Schema
 
-transaction
-        ↓
-settlement_item
-        ↓
-settlement_batch
+--Schema
 
-*/
+--transaction
+--        ↓
+--settlement_item
+--        ↓
+--settlement_batch
+
+
