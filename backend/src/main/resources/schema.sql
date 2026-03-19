@@ -1,3 +1,10 @@
+
+
+drop table settlement_item;
+drop table settlement_batch;
+drop table transactions;
+
+
 CREATE TABLE transactions (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     transaction_id VARCHAR(50) NOT NULL UNIQUE,
@@ -15,6 +22,7 @@ CREATE INDEX idx_status ON transactions (status);
 ALTER TABLE transactions ADD CONSTRAINT uk_idempotency UNIQUE (idempotency_key);
 
 
+
 --（結算批次）
 CREATE TABLE settlement_batch (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -30,6 +38,8 @@ CREATE TABLE settlement_batch (
 );
 
 ALTER TABLE settlement_batch ADD CONSTRAINT uk_batch_date UNIQUE (batch_date);
+
+
 
 
 --（結算明細）

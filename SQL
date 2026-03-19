@@ -57,3 +57,15 @@ settlement_item
 settlement_batch
 
 */
+
+
+/*
+
+docker run --name mysql-local \
+  -e MYSQL_ROOT_PASSWORD=pa \
+  -e MYSQL_DATABASE=sa \
+  -p 3306:3306 \
+  -d mysql:8
+
+*/
+
