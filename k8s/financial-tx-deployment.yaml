@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: financial-tx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: financial-tx
+  template:
+    metadata:
+      labels:
+        app: financial-tx
+    spec:
+      containers:
+        - name: app
+          image: fin-serv:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: "host.docker.internal"
+            - name: DB_PORT
+              value: "3306"
