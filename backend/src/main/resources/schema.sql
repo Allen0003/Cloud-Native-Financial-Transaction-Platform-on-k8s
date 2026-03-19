@@ -1,61 +1,57 @@
-
-
-drop table settlement_item;
-drop table settlement_batch;
-drop table transactions;
-
-
-CREATE TABLE transactions (
+-- 1. 交易表 (Transactions)
+-- 將 INDEX 與 UNIQUE 直接內嵌，避免重複執行報錯
+CREATE TABLE IF NOT EXISTS transactions (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    transaction_id VARCHAR(50) NOT NULL UNIQUE,
+    transaction_id VARCHAR(50) NOT NULL,
     user_id BIGINT NOT NULL,
     amount DECIMAL(19,4) NOT NULL,
     currency VARCHAR(10) NOT NULL,
     status VARCHAR(20) NOT NULL,
     idempotency_key VARCHAR(64) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-CREATE INDEX idx_user_id ON transactions (user_id);
-CREATE INDEX idx_status ON transactions (status);
-ALTER TABLE transactions ADD CONSTRAINT uk_idempotency UNIQUE (idempotency_key);
+    -- 安全內嵌索引與約束
+    UNIQUE KEY uk_transaction_id (transaction_id),
+    UNIQUE KEY uk_idempotency (idempotency_key),
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB;
 
 
-
---（結算批次）
-CREATE TABLE settlement_batch (
+-- 2. 結算批次表 (Settlement Batch)
+CREATE TABLE IF NOT EXISTS settlement_batch (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    batch_date DATE NOT NULL,                 -- 結算日期（例如 2026-03-17）
-    status VARCHAR(20) NOT NULL,              -- PENDING / PROCESSING / COMPLETED / FAILED
-    total_amount DECIMAL(18,2) DEFAULT 0,     -- 總金額
-    total_count INT DEFAULT 0,                -- 總筆數
+    batch_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    total_amount DECIMAL(18,2) DEFAULT 0,
+    total_count INT DEFAULT 0,
     started_at DATETIME,
     completed_at DATETIME,
-    version INT DEFAULT 0,                    -- optimistic locking
+    version INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-ALTER TABLE settlement_batch ADD CONSTRAINT uk_batch_date UNIQUE (batch_date);
+    -- 安全內嵌約束
+    UNIQUE KEY uk_batch_date (batch_date)
+) ENGINE=InnoDB;
 
 
-
-
---（結算明細）
-CREATE TABLE settlement_item (
+-- 3. 結算明細表 (Settlement Item)
+CREATE TABLE IF NOT EXISTS settlement_item (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     batch_id BIGINT NOT NULL,
     transaction_id VARCHAR(50) NOT NULL,
     amount DECIMAL(18,2) NOT NULL,
-    status VARCHAR(20) NOT NULL,  -- PENDING / SUCCESS / FAILED
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+    status VARCHAR(20) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-ALTER TABLE settlement_item ADD CONSTRAINT uk_txn UNIQUE (transaction_id);
-CREATE INDEX idx_batch_id ON settlement_item (batch_id);
-ALTER TABLE settlement_item ADD CONSTRAINT fk_batch FOREIGN KEY (batch_id) REFERENCES settlement_batch(id);
-
+    -- 安全內嵌索引與外鍵
+    UNIQUE KEY uk_txn (transaction_id),
+    INDEX idx_batch_id (batch_id),
+    CONSTRAINT fk_batch FOREIGN KEY (batch_id)
+        REFERENCES settlement_batch(id)
+) ENGINE=InnoDB;
 
 
 --Schema

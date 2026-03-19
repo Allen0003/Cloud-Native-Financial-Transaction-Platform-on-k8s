@@ -1,4 +1,4 @@
-INSERT INTO transactions (transaction_id, user_id, amount, currency, status, idempotency_key)
+INSERT IGNORE INTO transactions (transaction_id, user_id, amount, currency, status, idempotency_key)
 VALUES
 ('tx1001', 1, 100.00, 'USD', 'SUCCESS', 'idem-1001'),
 ('tx1002', 1, 200.00, 'USD', 'SUCCESS', 'idem-1002'),
