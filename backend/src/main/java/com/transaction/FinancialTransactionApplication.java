@@ -19,5 +19,14 @@ public class FinancialTransactionApplication {
         SpringApplication.run(FinancialTransactionApplication.class, args);
     }
 
+    //init 時做批次
+    @Bean
+    CommandLineRunner testRun(SettlementJob job) {
+        return args -> {
+            job.runManual();
+        };
+    }
+
+
 }
 

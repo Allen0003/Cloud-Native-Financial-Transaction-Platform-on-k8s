@@ -6,6 +6,9 @@ import com.transaction.domain.enums.SettlementStatus;
 import com.transaction.domain.repository.SettlementBatchRepository;
 import com.transaction.domain.repository.SettlementItemRepository;
 import com.transaction.service.SettlementService;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -17,10 +20,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 
-
+@Slf4j
 @Service
 public class SettlementServiceImpl implements SettlementService {
 
+    private static final Logger log = LoggerFactory.getLogger(SettlementServiceImpl.class);
     @Autowired
     SettlementBatchRepository batchRepo;
 
@@ -38,13 +42,13 @@ public class SettlementServiceImpl implements SettlementService {
         int updated = batchRepo.tryLockBatch(date);
 
         if (updated == 0) {
+            log.info("others is using ~~~~~~~~~~~~~~~~~~~~~~~~~");
             return;
         }
+        log.info("I got lock  ~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         // 3. 執行業務邏輯
         try {
-
-
             // 重新抓取最新狀態實體
             SettlementBatch currentBatch = batchRepo.findByBatchDate(date).orElseThrow();
 
