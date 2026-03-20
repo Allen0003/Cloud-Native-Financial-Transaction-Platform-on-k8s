@@ -33,15 +33,16 @@ public class SettlementServiceImpl implements SettlementService {
 
     private final Random random = new Random();
 
-    @Transactional
+
     public void runBatch(LocalDate date) {
         // 1. 確保基礎資料存在 (使用 Enum)
         SettlementBatch batch = ensureBatchExists(date);
 
         // 2. 嘗試搶鎖 (原子操作：只有一個 Pod 能把 PENDING 改成 PROCESSING)
-        int updated = batchRepo.tryLockBatch(date);
+        // 第一天第一次 不會更新 start_at
+        int locked = batchRepo.tryLockBatchWithTimeout(date, LocalDateTime.now().minusMinutes(10));
 
-        if (updated == 0) {
+        if (locked == 0) {
             log.info("others is using ~~~~~~~~~~~~~~~~~~~~~~~~~");
             return;
         }
@@ -55,7 +56,7 @@ public class SettlementServiceImpl implements SettlementService {
             // 執行 idempotent 插入
             itemRepo.insertSettlementItems(currentBatch.getId());
 
-            // TODO: 其他處理邏輯...
+            processItems(currentBatch);
 
             // 4. 更新為完成 (使用 Enum)
             currentBatch.setStatus(SettlementStatus.COMPLETED.getCode());
@@ -65,7 +66,7 @@ public class SettlementServiceImpl implements SettlementService {
         } catch (Exception e) {
             // 如果失敗，標記為 FAILED，以便後續人工排查或重試
             batchRepo.findByBatchDate(date).ifPresent(b -> {
-                b.setStatus(SettlementStatus.FAILED.getCode());
+                b.setStatus(SettlementStatus.PROCESSING.getCode());
                 batchRepo.save(b);
             });
             throw e;
@@ -91,20 +92,28 @@ public class SettlementServiceImpl implements SettlementService {
         List<SettlementItem> items = itemRepo.findPendingItems(batch.getId());
 
         for (SettlementItem item : items) {
-            try {// 模擬外部銀行 API
-                boolean success = simulateExternalCall();
-                if (success) {
-                    item.setStatus("SUCCESS");
-                } else {
-                    item.setStatus("FAILED");
-                }
+            try {
+                processSingleItem(item); // 🔥 每筆獨立 transaction
             } catch (Exception e) {
-                item.setStatus("FAILED");
+                log.error("process item failed: {}", item.getId(), e);
             }
         }
-
-        itemRepo.saveAll(items);
     }
+
+    @Transactional
+    public void processSingleItem(SettlementItem item) {
+
+        boolean success = simulateExternalCall();
+
+        if (success) {
+            item.setStatus(SettlementStatus.SUCCESS.getCode());
+        } else {
+            item.setStatus(SettlementStatus.FAILED.getCode());
+        }
+
+        itemRepo.save(item);
+    }
+
 
     public boolean simulateExternalCall() {
         // 80% 成功，20% 失敗

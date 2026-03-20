@@ -30,6 +30,10 @@ public interface SettlementItemRepository extends JpaRepository<SettlementItem, 
     int insertSettlementItems(@Param("batchId") Long batchId);
 
 
-    @Query("SELECT s FROM SettlementItem s WHERE s.batchId = :batchId AND s.status IN ('PENDING', 'FAILED')")
+    @Query("""
+            SELECT s FROM SettlementItem s
+            WHERE s.batchId = :batchId
+            AND s.status IN ('PENDING', 'FAILED')
+            """)
     List<SettlementItem> findPendingItems(@Param("batchId") Long batchId);
 }
