@@ -15,6 +15,9 @@ financial-transaction-service/
 │   │   │               │     ├── WebConfig.java
 │   │   │               │     └── KafkaConfig.java (配置 KafkaTemplate)
 │   │   │               │
+│	│	│			    ├── consumer/
+│   │   │				│	  └── SettlementConsumer.java
+│	│	│				│
 │   │   │               ├── controller/
 │   │   │               │     └── TransactionController.java
 │   │   │               │
@@ -45,6 +48,8 @@ financial-transaction-service/
 │   │   │               │           └── OutboxStatus.java
 │   │   │               │
 │   │   │               ├── dto/
+│	│	│				│	  ├── event/
+│	│	│				│	  │		└── SettlementEvent.java
 │   │   │               │     ├── request/
 │   │   │               │     │     └── CreateTransactionRequest.java
 │   │   │               │     └── response/
