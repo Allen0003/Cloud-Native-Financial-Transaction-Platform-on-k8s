@@ -11,5 +11,5 @@ public interface SettlementService {
 
     boolean simulateExternalCall();
 
-    void finalizeBatch(SettlementBatch batch);
+
 }

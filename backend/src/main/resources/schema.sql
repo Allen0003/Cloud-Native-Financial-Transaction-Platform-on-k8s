@@ -63,3 +63,13 @@ CREATE TABLE IF NOT EXISTS settlement_item (
 --settlement_batch
 
 
+
+
+CREATE TABLE outbox_event (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  aggregate_id VARCHAR(50),
+  event_type VARCHAR(50),
+  payload JSON,
+  status VARCHAR(20) DEFAULT 'NEW',
+  created_at DATETIME
+);
