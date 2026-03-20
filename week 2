@@ -37,6 +37,7 @@ Cloud-Native Financial Transaction Platform on Kubernetes
 4️⃣ 設計 single-writer 機制（避免多 pod 同時跑）
 5️⃣ 實作 Spring Boot batch job（可以用 @Scheduled 或其他方式）
 6️⃣ 模擬 batch crash 並設計 recovery
+7. 升級成kafka
 
 請用「面試導向」方式教我：
 - 每一步都解釋為什麼這樣設計
@@ -70,3 +71,62 @@ Happy Path（正常流程）
 
 [7] 更新 batch → COMPLETED
 
+
+
+
+多個 pod 的方式 - 用db 去擋
+
+如果拿到鎖 但是最後掛掉 - 用 Timeout 機制
+
+
+個別取鎖看看 在 SettlementBatchRepository.tryLockBatch
+
+然後在service 裡面 取 lock
+
+
+
+
+
+[Kubernetes]
+
+Deployment (replicas=3)
+        ↓
+Spring Boot Pods (3個)
+        ↓
+        → MySQL（單一 DB）
+
+
+
+runBatch()
+  ↓
+insert items
+  ↓
+process items
+  ↓
+COMPLETED
+
+
+
+runBatch（不加 @Transactional）
+   ↓
+tryLock（單獨 transaction）
+   ↓
+insert items（transaction）
+   ↓
+processItems（每筆 / 每批 transaction）
+
+
+
+
+--------- Kafka 版本
+
+
+Transaction → (DB)
+              ↓
+        Outbox Table
+              ↓
+     Outbox Publisher（Kafka Producer）
+              ↓
+        Kafka Topic（settlement-events）
+              ↓
+   Settlement Worker（Consumer group）
