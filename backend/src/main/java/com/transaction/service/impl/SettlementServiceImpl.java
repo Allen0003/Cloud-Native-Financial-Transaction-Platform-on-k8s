@@ -36,21 +36,19 @@ public class SettlementServiceImpl implements SettlementService {
 
     public void runBatch(LocalDate date) {
         // 1. 確保基礎資料存在 (使用 Enum)
-        SettlementBatch batch = ensureBatchExists(date);
+        ensureBatchExists(date);
 
         // 2. 嘗試搶鎖 (原子操作：只有一個 Pod 能把 PENDING 改成 PROCESSING)
         // 第一天第一次 不會更新 start_at
-        int locked = batchRepo.tryLockBatchWithTimeout(date, LocalDateTime.now().minusMinutes(10));
+        int locked = batchRepo.tryLockBatchWithTimeout(date, LocalDateTime.now().minusMinutes(1));
 
         if (locked == 0) {
-            log.info("others is using ~~~~~~~~~~~~~~~~~~~~~~~~~");
             return;
         }
         log.info("I got lock  ~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         // 3. 執行業務邏輯
         try {
-            // 重新抓取最新狀態實體
             SettlementBatch currentBatch = batchRepo.findByBatchDate(date).orElseThrow();
 
             // 執行 idempotent 插入
@@ -66,8 +64,8 @@ public class SettlementServiceImpl implements SettlementService {
         } catch (Exception e) {
             // 如果失敗，標記為 FAILED，以便後續人工排查或重試
             batchRepo.findByBatchDate(date).ifPresent(b -> {
-                b.setStatus(SettlementStatus.PROCESSING.getCode());
-                batchRepo.save(b);
+                log.error("Batch crashed", e);
+                throw e; // 讓 K8s restart pod
             });
             throw e;
         }
@@ -90,10 +88,16 @@ public class SettlementServiceImpl implements SettlementService {
 
     public void processItems(SettlementBatch batch) {
         List<SettlementItem> items = itemRepo.findPendingItems(batch.getId());
-
         for (SettlementItem item : items) {
+
+            // 🔥 隨機 crash（10% 機率）
+            if (random.nextInt(10) == 0) {
+                log.error("💥 Simulating batch crash!");
+                throw new RuntimeException("Simulated crash");
+            }
+
             try {
-                processSingleItem(item); // 🔥 每筆獨立 transaction
+                processSingleItem(item); // 每筆獨立 transaction
             } catch (Exception e) {
                 log.error("process item failed: {}", item.getId(), e);
             }
