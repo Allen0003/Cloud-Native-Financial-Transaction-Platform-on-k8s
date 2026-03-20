@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 
+//pod 非平行版本
+
 @Slf4j
 @Service
 public class SettlementServiceImpl implements SettlementService {
@@ -122,25 +124,6 @@ public class SettlementServiceImpl implements SettlementService {
     public boolean simulateExternalCall() {
         // 80% 成功，20% 失敗
         return random.nextInt(10) < 8;
-    }
-
-    public void finalizeBatch(SettlementBatch batch) {
-        List<SettlementItem> allItems = itemRepo.findAll();
-
-        BigDecimal total = allItems.stream()
-                .filter(i -> "SUCCESS".equals(i.getStatus()))
-                .map(SettlementItem::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        long count = allItems.stream()
-                .filter(i -> "SUCCESS".equals(i.getStatus()))
-                .count();
-
-        batch.setTotalAmount(total);
-        batch.setTotalCount((int) count);
-        batch.setStatus("COMPLETED");
-        batch.setCompletedAt(LocalDateTime.now());
-        batchRepo.save(batch);
     }
 
 }
