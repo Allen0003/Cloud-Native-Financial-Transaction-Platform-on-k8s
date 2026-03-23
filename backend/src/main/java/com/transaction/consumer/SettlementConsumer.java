@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
-
+import org.springframework.beans.factory.annotation.Value;
 import java.util.Random;
 
 //只要 SettlementConsumer 有掛 @Component 且內部有 @KafkaListener，Spring 一啟動就會自動連上 Kafka 開始待命。
@@ -27,6 +27,9 @@ public class SettlementConsumer {
     @Autowired
     SettlementItemRepository itemRepo;
 
+    @Value("${app.pod.name}")
+    private String podName;
+
     private final Random random = new Random();
 
     // 這裡的 topics 必須跟 Publisher 發送的名稱一致
@@ -41,7 +44,7 @@ public class SettlementConsumer {
 
             // 2. 執行真正的業務邏輯 (例如呼叫外部銀行 API 或更新帳務)
             SettlementItem item = itemRepo.findById(event.getId()).orElseThrow();
-
+            item.setProcessed_by(podName);
 
             boolean isSuccess = simulateExternalCall();
 

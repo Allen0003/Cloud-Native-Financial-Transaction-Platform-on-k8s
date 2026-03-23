@@ -20,12 +20,12 @@ public class FinancialTransactionApplication {
     }
 
     //init 時做批次
-//    @Bean
-//    CommandLineRunner testRun(SettlementJob job) {
-//        return args -> {
-//            job.runManual();
-//        };
-//    }
+    @Bean
+    CommandLineRunner testRun(SettlementJob job) {
+        return args -> {
+            job.runManual();
+        };
+    }
 
 
 }

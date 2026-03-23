@@ -33,6 +33,9 @@ public class SettlementItem {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "processed_by")
+    private String processed_by;
+
     public Long getId() {
         return id;
     }
@@ -79,5 +82,13 @@ public class SettlementItem {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getProcessed_by() {
+        return processed_by;
+    }
+
+    public void setProcessed_by(String processed_by) {
+        this.processed_by = processed_by;
     }
 }

@@ -3,6 +3,7 @@ package com.transaction.publisher;
 import com.transaction.domain.entity.OutboxEvent;
 import com.transaction.domain.repository.OutboxRepository;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.util.List;
 @Slf4j
 @Component // 讓 Spring 啟動這個零件
 @EnableScheduling // 開啟定時任務功能
+
 public class OutboxPublisher {
     private static final Logger log = LoggerFactory.getLogger(OutboxPublisher.class);
 
@@ -27,6 +29,11 @@ public class OutboxPublisher {
 
     // 每 5 秒執行一次
     @Scheduled(fixedDelay = 5000)
+    @SchedulerLock(
+            name = "OutboxPublisher_publishEvents",
+            lockAtLeastFor = "2s", // 鎖定至少 2 秒，防止短時間內重複執行
+            lockAtMostFor = "4s"   // 鎖定最長 4 秒
+    )
     public void publishOutbox() {
         // 1. 每次只抓 10 筆，避免一次塞爆記憶體
         List<OutboxEvent> events = repo.findTop10ByStatus("NEW");

@@ -50,7 +50,7 @@ public class SettlementKafkaServiceImpl implements SettlementKafkaService {
     @Transactional
     public void runBatch(LocalDate date) {
 
-        log.info("run batch in SettlementKafkaServiceImpl");
+        log.info("run batch in SettlementKafkaServiceImpl ~~~~ ");
 
         // 1. 取得或建立今天的批次
         SettlementBatch batch = ensureBatchExists(date);
