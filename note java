@@ -13,7 +13,8 @@ financial-transaction-service/
 │   │   │               │     ├── DatabaseConfig.java
 │   │   │               │     ├── JacksonConfig.java
 │   │   │               │     ├── WebConfig.java
-│   │   │               │     └── KafkaConfig.java (配置 KafkaTemplate)
+│   │   │               │     ├── KafkaConfig.java (配置 KafkaTemplate)
+│   │   │               │	  └── ShedLockConfig.java
 │   │   │               │
 │	│	│			    ├── consumer/
 │   │   │				│	  └── SettlementConsumer.java

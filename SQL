@@ -86,3 +86,26 @@ CREATE TABLE outbox_event (
   status VARCHAR(20) DEFAULT 'NEW',
   created_at DATETIME
 );
+
+
+
+
+
+-- 1. 修改 settlement_item：記錄最終是由哪個 Pod 完成結算的
+ALTER TABLE settlement_item
+ADD COLUMN processed_by VARCHAR(100) DEFAULT NULL COMMENT '處理此項目的 Pod 名稱';
+
+-- 2. 修改 outbox_event：記錄是哪個 Pod 將訊息從 DB 搬運至 Kafka 的
+ALTER TABLE outbox_event
+ADD COLUMN processed_by VARCHAR(100) DEFAULT NULL COMMENT '執行 Outbox 派發的 Pod 名稱';
+
+
+
+-- k8s 搶鎖版本
+CREATE TABLE shedlock (
+    name VARCHAR(64) NOT NULL,
+    lock_until TIMESTAMP(3) NOT NULL,
+    locked_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    locked_by VARCHAR(255) NOT NULL,
+    PRIMARY KEY (name)
+);
