@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: financial-tx
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: financial-tx
@@ -19,7 +19,18 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            # 1. 注入 Pod 名稱（對應你 Java 裡的 ${HOSTNAME} 或自定義變數）
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+            # 2. 資料庫連線（建議未來改為 Service Name，如 mysql-service）
             - name: DB_HOST
               value: "host.docker.internal"
             - name: DB_PORT
               value: "3306"
+
+            # 3. Kafka 連線
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
