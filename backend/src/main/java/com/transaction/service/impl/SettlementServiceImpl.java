@@ -1,3 +1,5 @@
+// 非kafka 版本 就是用DB 擋住搶鎖
+
 package com.transaction.service.impl;
 
 import com.transaction.domain.entity.SettlementBatch;
@@ -14,7 +16,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;

@@ -130,3 +130,16 @@ Transaction → (DB)
         Kafka Topic（settlement-events）
               ↓
    Settlement Worker（Consumer group）
+
+
+
+Outbox Pattern 「不要直接寄信，先把信放進發信匣。」
+
+DB transaction（atomic）
+  ↓
+transaction table
+outbox table（event）
+
+
+測試網址
+curl -X POST http://localhost:8080/batch/runKafka

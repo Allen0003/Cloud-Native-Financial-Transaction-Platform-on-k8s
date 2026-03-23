@@ -2,7 +2,6 @@ package com.transaction.publisher;
 
 import com.transaction.domain.entity.OutboxEvent;
 import com.transaction.domain.repository.OutboxRepository;
-import com.transaction.service.impl.SettlementServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,7 @@ import java.util.List;
 @Component // 讓 Spring 啟動這個零件
 @EnableScheduling // 開啟定時任務功能
 public class OutboxPublisher {
-    private static final Logger log = LoggerFactory.getLogger(SettlementServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(OutboxPublisher.class);
 
     @Autowired
     private OutboxRepository repo;
