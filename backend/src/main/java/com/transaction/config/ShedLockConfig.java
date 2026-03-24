@@ -1,5 +1,7 @@
 package com.transaction.config;
 
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
@@ -20,5 +22,11 @@ public class ShedLockConfig {
                         .usingDbTime() // 建議使用資料庫時間，避免 Pod 之間時鐘不一致
                         .build()
         );
+    }
+
+    @Bean
+    public LockingTaskExecutor lockingTaskExecutor(LockProvider lockProvider) {
+        // 手動定義這個 Bean，讓 CommandLineRunner 可以注入
+        return new DefaultLockingTaskExecutor(lockProvider);
     }
 }

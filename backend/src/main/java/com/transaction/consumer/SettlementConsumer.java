@@ -31,6 +31,7 @@ public class SettlementConsumer {
     private String podName;
 
     private final Random random = new Random();
+    int cnt = 0;
 
     // 這裡的 topics 必須跟 Publisher 發送的名稱一致
     // groupId 決定了哪些 Consumer 屬於同一個團隊 (Team)
@@ -54,8 +55,8 @@ public class SettlementConsumer {
                 item.setStatus(SettlementStatus.FAILED.getCode());
             }
             itemRepo.save(item);
-
-            log.info("✅ Successfully processed event for item: {}", event.getId());
+            cnt++;
+            log.info("✅ Successfully processed event for item: {}", event.getId() + " total handling: " + cnt);
         } catch (Exception e) {
             // 如果失敗，Kafka 預設會根據你的配置進行重試 (Retry)
             log.error(" Failed to process Kafka message", e);

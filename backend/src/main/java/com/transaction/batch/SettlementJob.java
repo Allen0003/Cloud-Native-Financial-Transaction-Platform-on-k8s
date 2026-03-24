@@ -3,6 +3,7 @@ package com.transaction.batch;
 import com.transaction.service.SettlementKafkaService;
 import com.transaction.service.SettlementService;
 import lombok.RequiredArgsConstructor;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,16 +20,13 @@ public class SettlementJob {
     @Autowired
     SettlementKafkaService settlementKafkaService;
 
-    public SettlementJob(SettlementService settlementService) {
-        this.settlementService = settlementService;
-    }
-
+    @SchedulerLock(name = "daily_settlement_job_lock", lockAtLeastFor = "1m", lockAtMostFor = "10m")
     public void runManual() {
         settlementKafkaService.runBatch(LocalDate.now());
     }
 
-    @Scheduled(cron = "0 0 2 * * ?")
-    public void run() {
-        settlementService.runBatch(LocalDate.now().minusDays(1));
-    }
+//    @Scheduled(cron = "0 0 2 * * ?")
+//    public void run() {
+//        settlementService.runBatch(LocalDate.now().minusDays(1));
+//    }
 }
