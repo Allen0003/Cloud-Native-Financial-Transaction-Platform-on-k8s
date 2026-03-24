@@ -40,6 +40,9 @@ public class SettlementConsumer {
         try {
             log.info("📥 Received Kafka message: {}", message);
 
+            Thread.sleep(6000);
+
+
             // 1. 解析 JSON
             SettlementEvent event = objectMapper.readValue(message, SettlementEvent.class);
 

@@ -38,6 +38,11 @@ Cloud-Native Financial Transaction Platform on Kubernetes
 5️⃣ 實作 Spring Boot batch job（可以用 @Scheduled 或其他方式）
 6️⃣ 模擬 batch crash 並設計 recovery
 7. 升級成kafka
+8. 實作 DLQ (Dead Letter Queue)
+9. multi thread
+
+
+
 
 請用「面試導向」方式教我：
 - 每一步都解釋為什麼這樣設計
