@@ -36,6 +36,10 @@ public class SettlementItem {
     @Column(name = "processed_by")
     private String processed_by;
 
+    @Version // 防止 Lost Update 的關鍵
+    private Integer version;
+
+
     public Long getId() {
         return id;
     }
@@ -90,5 +94,13 @@ public class SettlementItem {
 
     public void setProcessed_by(String processed_by) {
         this.processed_by = processed_by;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 }

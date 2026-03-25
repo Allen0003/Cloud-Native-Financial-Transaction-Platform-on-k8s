@@ -8,6 +8,7 @@ import com.transaction.dto.event.SettlementEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import java.util.Random;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "feature.old-consumer.enabled", havingValue = "true")
 public class SettlementConsumer {
     private static final Logger log = LoggerFactory.getLogger(SettlementConsumer.class);
 
@@ -41,7 +43,6 @@ public class SettlementConsumer {
             log.info("📥 Received Kafka message: {}", message);
 
             Thread.sleep(6000);
-
 
             // 1. 解析 JSON
             SettlementEvent event = objectMapper.readValue(message, SettlementEvent.class);

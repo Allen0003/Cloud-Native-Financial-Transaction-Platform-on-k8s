@@ -109,3 +109,9 @@ CREATE TABLE shedlock (
     locked_by VARCHAR(255) NOT NULL,
     PRIMARY KEY (name)
 );
+
+
+
+-- 樂觀鎖 multi thread
+ALTER TABLE settlement_item
+ADD COLUMN version INT NOT NULL DEFAULT 0;

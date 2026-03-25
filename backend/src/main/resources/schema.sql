@@ -92,3 +92,6 @@ CREATE TABLE IF NOT EXISTS shedlock (
     locked_by VARCHAR(255) NOT NULL,
     PRIMARY KEY (name)
 );
+
+ALTER TABLE settlement_item
+ADD COLUMN version INT NOT NULL DEFAULT 0;
