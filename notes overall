@@ -1,7 +1,4 @@
 
-
-
-
 ① 一個「能講 20 分鐘的雲端 / k8s 故事」（最重要）
 
 你一定要準備 1 個主線案例，可以是：
@@ -254,9 +251,6 @@ curl 打 API → 回資料 → kill pod → API 還活著
 
 
 🟩 Week 2｜資料庫 + 批次（金融味出來）
-🎯 目標
-
-👉 「這不是玩具，是金融系統」
 
 📦 要完成的東西
 
@@ -285,7 +279,18 @@ batch 跑一半掛怎麼辦
 ✅ 完成定義
 batch crash → restart → 不 double count
 
+
+TODO:
 這邊還要搞 java 多執行緒 看看用 nosql or zookeeper 去試看看
+
+更好的進階方案：任務隊列 (Message Queue)
+
+如果你的資料量非常大（幾萬筆以上），通常不會在 SQL 裡面用 MOD。
+工程師會改用 Spring Batch + Remote Chunking 或 訊息隊列 (Kafka/RabbitMQ)：
+
+    Master Pod：負責掃描 transactions 表，把 10 筆 ID 丟進隊列。
+
+    Worker Pods (3個)：大家去隊列裡面「搶」訊息。誰搶到誰處理。這能達到完美的負載平衡（能者多勞）。
 
 
 
@@ -325,7 +330,13 @@ readiness 怎麼擋壞版
 壞版 deploy → 流量沒進來 → rollback 成功
 
 
+增加串 AI
 
+Agentic AI（代理型 AI）： 這是 2026 年最火紅的領域。後端工程師要學的是如何把 Java 服務與 LLM 串接，建立能自動執行任務的「AI 代理」。
+
+Vector Databases（向量資料庫）： 學會如何處理 RAG（檢索增強生成），讓企業內部資料能被 AI 使用。
+
+RPA 與自動化： 像你之前設計的「自動告警與重啟系統」，如果能加入 AI 判斷 log 異常原因，價值會翻倍。
 
 
 
@@ -361,7 +372,7 @@ HPA
 你可以「預測」系統會怎麼反應
 
 
-
+再加上實作串第三方 gmail login
 
 
 
@@ -458,6 +469,12 @@ Week 5 → 直接跳 Week 6
 
 
 
+docker-compose.yml
+
+裡面是放 kafka跟 zookeeper
+
+
+
 ***** 筆記 ******
 
 
@@ -473,4 +490,72 @@ actuator  是 spring 內建的 health endpoint。
 domain → 資料 & DB
 service → 商業邏輯
 batch → orchestration（排程 / 流程控制）
+
+搶鎖工具
+Java 內建鎖（如 AtomicInteger）
+外部共享資源（如 Database, Redis, ZooKeeper）
+
+
+Outbox Pattern 「不要直接寄信，先把信放進發信匣。」
+
+DB transaction（atomic）
+  ↓
+transaction table
+outbox table（event）
+
+
+*****
+
+batch:
+curl -X POST http://localhost:8080/batch/run
+
+
+add transactions:
+curl -X POST http://localhost:8080/api/transactions \
+-H "Content-Type: application/json" \
+-d '{
+  "userId": 1,
+  "amount": 100.50,
+  "currency": "USD",
+  "idempotencyKey": "abc123"
+}'
+
+
+get transaction:
+curl http://localhost:8080/api/transactions/tx1001
+
+
+
+
+docker build
+
+docker build -t fin-serv:latest .
+
+
+logs
+
+kubectl logs -l app=financial-tx -f --prefix
+
+
+
+
+
+kafka
+
+建立topic
+
+docker exec -it kafka-zoo-kafka-1 kafka-topics \
+  --create \
+  --topic settlement-events \
+  --bootstrap-server localhost:9092 \
+  --partitions 3 \
+  --replication-factor 1
+
+
+看topic
+
+
+docker exec -it kafka-zoo-kafka-1 kafka-topics \
+  --list \
+  --bootstrap-server localhost:9092
 

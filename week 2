@@ -37,19 +37,9 @@ Cloud-Native Financial Transaction Platform on Kubernetes
 4️⃣ 設計 single-writer 機制（避免多 pod 同時跑）
 5️⃣ 實作 Spring Boot batch job（可以用 @Scheduled 或其他方式）
 6️⃣ 模擬 batch crash 並設計 recovery
-7. 升級成kafka
+7. 升級成kafka - consumer 要 Manual Ack
 8. 實作 DLQ (Dead Letter Queue)
 9. multi thread
-
-
-
-
-請用「面試導向」方式教我：
-- 每一步都解釋為什麼這樣設計
-- 補充面試可以怎麼講
-- 給我實作 code
-
-從 DB schema 設計開始。
 
 
 
@@ -148,3 +138,48 @@ outbox table（event）
 
 測試網址
 curl -X POST http://localhost:8080/batch/runKafka
+
+
+
+
+
+
+Summary:
+
+ZooKeeper 是 kafka 要用到的東西
+用docker compose 就要用到
+
+
+用OutboxPublisher.java
+為一隻背景批次 它只抓狀態為 NEW 的資料，丟給 Kafka。
+丟一個訊息到DB 說有資料在 kafka
+丟一些訊息到 kafka
+用SchedulerLock -> DB鎖住防止同時執行
+
+
+為什麼不直接在 Service 裡發 Kafka？
+會遇到「分散式事務」問題： 問題就是 kafka 無法下載一個 transaction 裡面
+
+    情境 A： 你先發了 Kafka，結果資料庫 commit 失敗回滾了。
+        結果： 消費端收到了訊息開始結算，但資料庫根本沒有這筆交易。（帳務不一致！）
+
+    情境 B： 你先存資料庫成功了，準備發 Kafka 時網路斷了。
+        結果： 資料庫狀態改好了，但 Kafka 沒訊息，這筆結算就永遠「卡死」在那裡沒人處理。（掉單！）
+
+
+
+Service
+SettlementKafkaServiceImpl.java
+被觸發的批次
+會去掃DB看有沒有未處理的item
+會存訊息到DB 說有新的未處理的狀態
+
+
+
+SettlementConsumer.java
+背景批次
+就是去kafka 裡面掃看有沒有未處理的資料
+目前還有問題 就是 SettlementConsumer 執行一半掛掉 資料會消失
+
+
+
