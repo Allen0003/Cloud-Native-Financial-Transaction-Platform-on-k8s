@@ -6,3 +6,5 @@ p2. 在 local 的 consumer and publisher and kafka
 P3. kafka 3 partitions (default) 2 pod
 
 p4. kafka 1 partition 2 pod 刪除一個另一個自動接手
+
+p5: kafka 3 partitions 2 pod with 3 threads
