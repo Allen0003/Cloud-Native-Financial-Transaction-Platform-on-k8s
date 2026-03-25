@@ -504,6 +504,32 @@ transaction table
 outbox table（event）
 
 
+
+Kafka 筆記
+
+
+不管是要兩個pod 或是兩個thread 去同時做事 都是要兩個以上的partition
+
+partition 裡面資料怎麼放, 順序, hash 看設定
+
+partition0: data1, data3
+
+partition1: data2, data4
+
+然後 kafka 裡面資料當作DB 可以用分區來確保資料不會掉
+ReplicationFactor: 3
+
+
+樂觀鎖
+
+只要在 entity 裡面新增
+
+    @Version // 防止 Lost Update 的關鍵
+    private Integer version;
+
+只要你有 @Version，JPA/Hibernate 就會自動幫你在 save() 方法執行時加入 AND version = ? 的檢查。
+
+
 *****
 
 batch:
@@ -559,3 +585,13 @@ docker exec -it kafka-zoo-kafka-1 kafka-topics \
   --list \
   --bootstrap-server localhost:9092
 
+
+docker exec -it kafka-zoo-kafka-1 kafka-topics \
+  --describe \
+  --topic settlement-events \
+  --bootstrap-server localhost:9092
+
+
+改完 partition 參數 要先 刪掉 舊的topic
+
+docker exec -it kafka-zoo-kafka-1 kafka-topics --delete --topic settlement-events --bootstrap-server localhost:9092

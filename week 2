@@ -183,3 +183,12 @@ SettlementConsumer.java
 
 
 
+CommandLineRunner (testRun): 這是 Spring Boot 提供的一個鉤子，會在 Spring Context 完全啟動後、應用程式對外服務前執行。
+
+
+
+SettlementConsumerMultiThread.java
+
+用 多個 thread 去執行批次
+
+
