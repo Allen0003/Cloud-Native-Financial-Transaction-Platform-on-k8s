@@ -192,3 +192,115 @@ SettlementConsumerMultiThread.java
 用 多個 thread 去執行批次
 
 
+
+
+// NoSQL 選用 MongoDB 因為 內建 sharding key
+
+起了ˋ台 mongo DB 這種配置是 mongo DB 內建的
+
+1. Config Server (紀錄分片資訊)
+2. Shard1 節點 (存 2TB 資料的地方)
+3. Shard2 節點 (存 2TB 資料的地方)
+4. Mongos (你的 Spring Boot 要連這一台)
+
+初始化 Config Server
+
+docker exec -it mongo-config mongosh --eval 'rs.initiate({_id: "configRS", configsvr: true, members: [{_id: 0, host: "configsvr:27017"}]})'
+
+建立一個 configRS 任務是記錄哪一筆資料在哪一個倉庫
+
+
+初始化 Shard 建立倉庫
+
+docker exec -it mongo-shard1 mongosh --eval 'rs.initiate({_id: "shardRS1", members: [{_id: 0, host: "shard1:27017"}]})'
+docker exec -it mongo-shard2 mongosh --eval 'rs.initiate({_id: "shardRS2", members: [{_id: 0, host: "shard2:27017"}]})'
+
+
+
+把 Shard 加入 Mongos (最關鍵)
+
+docker exec -it mongo-mongos mongosh
+
+
+把苦力（Shard）掛載上去：
+sh.addShard("shardRS1/shard1:27017")
+sh.addShard("shardRS2/shard2:27017")
+
+有一個 shardRS1 位子在 shard1:27017
+有一個 shardRS2 位子在 shard2:27017
+
+
+在創立一個 batch_db
+use batch_db
+sh.enableSharding("batch_db")
+
+
+
+在使用 userid 做 hashing
+db.users.createIndex({ "userid": "hashed" })
+
+
+正式 hashing
+sh.shardCollection("batch_db.users", { "userid": "hashed" })
+
+
+清空所有資料
+db.users.deleteMany({})
+
+
+創 30 筆資料 用 js語法
+
+var testData = [];
+for (var i = 1; i <= 30; i++) {
+    testData.push({
+        "userid": "User" + i,
+        "money": Math.floor(Math.random() * 100000)
+    });
+}
+db.users.insertMany(testData);
+
+
+取得所有的資料
+db.users.getShardDistribution()
+
+
+
+
+// SQL
+
+
+select * from transactions
+
+select * from settlement_batch
+select * from settlement_item
+
+
+delete from outbox_event;
+delete from settlement_item;
+delete from settlement_batch;
+delete from shedlock;
+delete from outbox_event;
+
+
+select * from shedlock
+
+SELECT * FROM outbox_event;
+
+
+ALTER TABLE settlement_item 
+ADD COLUMN processed_by VARCHAR(100) DEFAULT NULL COMMENT '處理此項目的 Pod 名稱';
+
+-- 2. 修改 outbox_event：記錄是哪個 Pod 將訊息從 DB 搬運至 Kafka 的
+ALTER TABLE outbox_event 
+ADD COLUMN processed_by VARCHAR(100) DEFAULT NULL COMMENT '執行 Outbox 派發的 Pod 名稱';
+
+
+
+ALTER TABLE settlement_item 
+ADD COLUMN version INT NOT NULL DEFAULT 0;
+
+
+
+ALTER TABLE settlement_item 
+MODIFY COLUMN processed_by VARCHAR(255);
+

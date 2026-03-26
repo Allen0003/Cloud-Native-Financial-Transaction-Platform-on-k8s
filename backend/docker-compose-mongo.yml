@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # --- 1. 大腦 (Config Server) ---
+  configsvr:
+    image: mongo:6.0
+    container_name: mongo-config
+    command: mongod --configsvr --replSet configRS --port 27017 --bind_ip_all
+
+  # --- 2. 倉庫 A (Shard 1) ---
+  shard1:
+    image: mongo:6.0
+    container_name: mongo-shard1
+    command: mongod --shardsvr --replSet shardRS1 --port 27017 --bind_ip_all
+
+  # --- 3. 倉庫 B (Shard 2) ---
+  shard2:
+    image: mongo:6.0
+    container_name: mongo-shard2
+    command: mongod --shardsvr --replSet shardRS2 --port 27017 --bind_ip_all
+
+  # --- 4. 大門 (Mongos / 入口) ---
+  mongos:
+    image: mongo:6.0
+    container_name: mongo-mongos
+    depends_on:
+      - configsvr
+      - shard1
+      - shard2
+    command: mongos --configdb configRS/configsvr:27017 --port 27017 --bind_ip_all
+    ports:
+      - 27017:27017

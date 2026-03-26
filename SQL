@@ -93,7 +93,7 @@ CREATE TABLE outbox_event (
 
 -- 1. 修改 settlement_item：記錄最終是由哪個 Pod 完成結算的
 ALTER TABLE settlement_item
-ADD COLUMN processed_by VARCHAR(100) DEFAULT NULL COMMENT '處理此項目的 Pod 名稱';
+ADD COLUMN processed_by VARCHAR(255) DEFAULT NULL COMMENT '處理此項目的 Pod 名稱';
 
 -- 2. 修改 outbox_event：記錄是哪個 Pod 將訊息從 DB 搬運至 Kafka 的
 ALTER TABLE outbox_event
@@ -115,3 +115,12 @@ CREATE TABLE shedlock (
 -- 樂觀鎖 multi thread
 ALTER TABLE settlement_item
 ADD COLUMN version INT NOT NULL DEFAULT 0;
+
+
+
+ALTER TABLE settlement_item
+MODIFY COLUMN processed_by VARCHAR(255);
+
+
+
+
