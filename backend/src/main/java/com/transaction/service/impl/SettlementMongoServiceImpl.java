@@ -10,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -30,75 +33,88 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
     @Value("${app.batch.size:10}")
     private int batchSize;
 
-    public void batchProcessLevelSettlement() {
-        log.info(">>> Starting Batch Settlement Process...");
+    @Value("${app.pod.name:local-dev}")
+    private String podName;
 
-        // 1. 定義查詢條件：撈出所有需要計算的 User
-        Query query = new Query();
-        // 設定 batchSize，這就是告訴 MongoDB 驅動：每次從網路抓 10 筆回來就好，不要一次抓 100 筆
+
+    // 定義要開幾個執行緒（例如 3 個）
+    private final int threadCount = 3;
+
+    // 建立執行緒池
+    private final ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+
+    @Override
+    public void batchProcessLevelSettlement() {
+        log.info("~~~~~~~~~~ Starting Multi-threaded Batch Process (Threads: {})", threadCount);
+
+        for (int i = 0; i < threadCount; i++) {
+            final int remainder = i;
+            executor.submit(() -> {
+                try {
+                    processPartition(remainder);
+                } catch (Exception e) {
+                    log.error("Thread for remainder {} failed", remainder, e);
+                }
+            });
+        }
+    }
+
+    private void processPartition(int remainder) {
+        log.info("[Thread-{}] Started. Handling money % {} == {}", remainder, threadCount, remainder);
+
+        String threadId = "Thread-" + remainder;
+
+
+        // 使用 MongoDB 的 $mod 運算子進行分區查詢
+        // 語法：{ field: { $mod: [ divisor, remainder ] } }
+        Query query = new Query(Criteria.where("money").mod(threadCount, remainder));
         query.cursorBatchSize(batchSize);
 
-        int totalProcessed = 0;
-        List<User> chunkBuffer = new ArrayList<>();
+        int processedInThread = 0;
+        List<User> buffer = new ArrayList<>();
 
-        // 2. 使用 stream (流式讀取)：這不會一次把 100 筆塞進 JVM 記憶體
         try (CloseableIterator<User> iterator = mongoTemplate.stream(query, User.class)) {
             while (iterator.hasNext()) {
                 User user = iterator.next();
 
-                // --- 計算邏輯：money % 3 分成 level 1, 2, 3 ---
-                int calculatedLevel = (int) (user.getMoney() % 3) + 1;
-                user.setLevel(calculatedLevel);
+                // 計算邏輯
+                user.setLevel((int) (user.getMoney() % 3) + 1);
+                buffer.add(user);
+                processedInThread++;
 
-                chunkBuffer.add(user);
-                totalProcessed++;
-
-                // 3. 每滿 10 筆，發動一次 Bulk Update
-                if (chunkBuffer.size() >= 10) {
-                    executeBulkUpdate(chunkBuffer);
-                    chunkBuffer.clear(); // 清空緩衝區，準備下一批
-
-                    // --- 睡眠 5 秒測試邏輯 ---
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        log.error("Batch sleep interrupted", e);
-                    }
+                if (buffer.size() >= batchSize) {
+                    executeBulkUpdate(buffer, threadId);
+                    log.info("[Thread-{}] Bulk updated {} records. (Total: {})",
+                            remainder, buffer.size(), processedInThread);
+                    buffer.clear();
 
 
-
-                    log.info("Processed {} records so far...", totalProcessed);
+                    Thread.sleep(5000);
                 }
             }
-
-            // 4. 處理剩下的碎末 (例如最後剩下 3 筆不滿 10 筆的情況)
-            if (!chunkBuffer.isEmpty()) {
-                executeBulkUpdate(chunkBuffer);
+            // 最後一聲哨音
+            if (!buffer.isEmpty()) {
+                executeBulkUpdate(buffer, threadId);
             }
+        } catch (Exception e) {
+            log.error("[Thread-{}] Error during streaming", remainder, e);
         }
 
-        log.info(">>> Finished! Total records processed: {}", totalProcessed);
-
-
-
-
+        log.info("[Thread-{}] Finished. Total processed: {}", remainder, processedInThread);
     }
 
-    private void executeBulkUpdate(List<User> users) {
-        // 使用 UNORDERED 模式：讓 Mongos 同時把更新丟給 Shard 1 和 Shard 2，效率最高
+    private void executeBulkUpdate(List<User> users, String threadId) {
         BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, User.class);
-
         for (User user : users) {
-            // 注意：更新時務必帶著 Shard Key (userid)，否則 Mongos 會廣播到所有 Shard，效能變差
-            Query updateQuery = new Query(Criteria.where("userid").is(user.getUserId()));
-            Update update = new Update().set("level", user.getLevel());
-
+            // 務必帶上 Shard Key: userid
+            Query updateQuery = new Query(Criteria.where("Id").is(user.getId()));
+            Update update = new Update()
+                    .set("level", user.getLevel())
+                    .set("processed_pod", podName)
+                    .set("processed_thread", threadId)
+                    .set("processed_at", new Date()); // 加個時間戳更好查
             bulkOps.updateOne(updateQuery, update);
         }
-
-        // 一口氣把 10 筆更新送出去
         bulkOps.execute();
     }
-
 }
