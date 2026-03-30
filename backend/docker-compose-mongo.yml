@@ -1,4 +1,5 @@
 version: '3.8'
+name: mongo-db-cluster
 
 services:
   # --- 1. 大腦 (Config Server) ---
