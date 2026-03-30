@@ -37,10 +37,10 @@ Cloud-Native Financial Transaction Platform on Kubernetes
 4️⃣ 設計 single-writer 機制（避免多 pod 同時跑）
 5️⃣ 實作 Spring Boot batch job（可以用 @Scheduled 或其他方式）
 6️⃣ 模擬 batch crash 並設計 recovery
-7. 升級成kafka - consumer 要 Manual Ack
+7. 升級成 kafka - consumer 要 Manual Ack
 8. 實作 DLQ (Dead Letter Queue)
 9. multi thread
-
+10. mongo DB 大資料 sharding 寫入 讀取
 
 
 
@@ -114,6 +114,8 @@ processItems（每筆 / 每批 transaction）
 
 
 --------- Kafka 版本
+
+從DB 拿資料丟到 kafka 然後去走平行
 
 
 Transaction → (DB)
@@ -196,7 +198,7 @@ SettlementConsumerMultiThread.java
 
 // NoSQL 選用 MongoDB 因為 內建 sharding key
 
-起了ˋ台 mongo DB 這種配置是 mongo DB 內建的
+起了4台 mongo DB 這種配置是 mongo DB 內建的
 
 1. Config Server (紀錄分片資訊)
 2. Shard1 節點 (存 2TB 資料的地方)
@@ -248,10 +250,10 @@ sh.shardCollection("batch_db.users", { "userid": "hashed" })
 db.users.deleteMany({})
 
 
-創 30 筆資料 用 js語法
+創 100 筆資料 用 js語法
 
 var testData = [];
-for (var i = 1; i <= 30; i++) {
+for (var i = 1; i <= 100; i++) {
     testData.push({
         "userid": "User" + i,
         "money": Math.floor(Math.random() * 100000)
@@ -262,6 +264,23 @@ db.users.insertMany(testData);
 
 取得所有的資料
 db.users.getShardDistribution()
+
+
+
+
+
+mongo db init ****
+db.users.updateMany(
+  {},
+  {
+    $unset: {
+      "level": "",
+      "processed_pod": "",
+      "processed_thread": "",
+      "processed_at": ""
+    }
+  }
+)
 
 
 
@@ -304,3 +323,34 @@ ADD COLUMN version INT NOT NULL DEFAULT 0;
 ALTER TABLE settlement_item 
 MODIFY COLUMN processed_by VARCHAR(255);
 
+
+
+
+
+
+NoSQL 層級 (由大到小)
+
+Database (batch_db)
+
+Collection (users) = MySQL 的 table
+
+Document (每一筆資料)
+
+
+
+
+Mongo DB 有 Read Chunk / Write Bulk
+
+一次讀比方說1000筆 寫回1000筆
+
+可以用id來區分 或是 index
+
+
+用 batchSize 在 java 裡面寫
+
+
+pod 裡面還有multi thread
+
+Pod-0 負責 mod(3, 0)，它裡面開 2 個 Thread：
+    Thread-0: 處理 (money % 6 == 0)
+    Thread-1: 處理 (money % 6 == 3)

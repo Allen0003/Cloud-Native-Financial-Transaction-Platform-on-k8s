@@ -1,17 +1,18 @@
 
+https://www.104.com.tw/job/6ar3t?jobsource=google
+ 有分散式資料存儲技術的經驗，如：MongoDB、Elasticsearch
+
+中信
+1943Apss@
+
+https://ctbcholding.wd3.myworkdayjobs.com/External/job/-_JR116
+
+
 ① 一個「能講 20 分鐘的雲端 / k8s 故事」（最重要）
-
-你一定要準備 1 個主線案例，可以是：
-
-公司 side project
-
-        自架系統
 
 重構既有服務（哪怕是模擬）
 
 這個故事一定要包含：
-
-為什麼不用 VM
 
 k8s 架構怎麼設計
 
@@ -32,11 +33,6 @@ k8s 架構怎麼設計
 
         📌 你不需要真的發生過
         📌 但你一定要「想過」
-
-
-
-
-
 
 
 
@@ -211,8 +207,6 @@ MySQL (RDS)
 
 GitHub Actions
 
-👉 這週不做完也沒關係，只是讓你過年直接開幹。
-
 🟩 Week 1｜核心服務跑起來（基礎盤）
 🎯 目標
 
@@ -283,7 +277,7 @@ batch crash → restart → 不 double count
 TODO:
 這邊還要搞 java 多執行緒 看看用 nosql or zookeeper 去試看看
 
-更好的進階方案：任務隊列 (Message Queue)
+更好的進階方案：任務隊列 (Message Queue) kafka
 
 如果你的資料量非常大（幾萬筆以上），通常不會在 SQL 裡面用 MOD。
 工程師會改用 Spring Batch + Remote Chunking 或 訊息隊列 (Kafka/RabbitMQ)：
@@ -530,6 +524,10 @@ ReplicationFactor: 3
 只要你有 @Version，JPA/Hibernate 就會自動幫你在 save() 方法執行時加入 AND version = ? 的檢查。
 
 
+
+加上手動 ack 程式執行一半掛掉沒回傳 kafka 資料不會掉 另一個thread/ pod 會接下去繼續執行
+
+
 *****
 
 batch:
@@ -560,7 +558,7 @@ docker build -t fin-serv:latest .
 
 logs
 
-kubectl logs -l app=financial-tx -f --prefix
+k logs -l app=financial-tx -f --prefix
 
 
 

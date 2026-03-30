@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: financial-tx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: financial-tx
+  template:
+    metadata:
+      labels:
+        app: financial-tx
+    spec:
+      containers:
+        - name: app
+          image: fin-serv:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            # 1. 取得 Pod 名字 (例如: financial-tx-0)
+            - name: APP_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+            # 2. 告訴程式總共有幾個副本 (分母)
+            - name: APP_POD_REPLICAS
+              value: "2"
+
+            # 3. 資料庫與 Kafka 連線
+            - name: DB_HOST
+              value: "host.docker.internal"
+            - name: DB_PORT
+              value: "3306"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "host.docker.internal:29092"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "host.docker.internal:29092"
+
+            - name: MONGODB_HOST
+              value: "host.docker.internal"
+            - name: MONGODB_PORT
+              value: "27017"
+
+
+            # 這裡不需要 APP_POD_INDEX，因為我們要讓 Java 啟動時從 POD_NAME 自動抓
+
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
+      terminationGracePeriodSeconds: 30
