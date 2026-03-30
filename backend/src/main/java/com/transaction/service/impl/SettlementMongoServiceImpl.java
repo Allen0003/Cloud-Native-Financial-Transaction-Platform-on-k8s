@@ -21,6 +21,8 @@ import org.springframework.data.util.CloseableIterator; // 注意是在 .util �
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 
+import javax.annotation.PostConstruct;
+
 
 @Slf4j
 @Service
@@ -33,8 +35,14 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
     @Value("${app.batch.size:10}")
     private int batchSize;
 
-    @Value("${app.pod.name:local-dev}")
+    @Value("${app.pod.name:local-dev-0}") // 預設給個帶數字的名字方便本地測試
     private String podName;
+
+    private int podIndex;
+
+    // K8s 注入：總共有幾個 Pod 正在跑
+    @Value("${app.pod.replicas:1}")
+    private int totalPods;
 
 
     // 定義要開幾個執行緒（例如 3 個）
@@ -43,31 +51,44 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
     // 建立執行緒池
     private final ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
+
+    @PostConstruct
+    public void init() {
+        try {
+            // 從名字最後一個字抓數字 (例如 financial-tx-1 -> 1)
+            String indexStr = podName.substring(podName.lastIndexOf("-") + 1);
+            this.podIndex = Integer.parseInt(indexStr);
+            log.info("[System Init] Detected Pod Index: {} from Pod Name: {}", this.podIndex, podName);
+        } catch (Exception e) {
+            log.warn("[System Init] Could not parse Index from Pod Name {}, defaulting to 0", podName);
+            this.podIndex = 0;
+        }
+    }
+
     @Override
     public void batchProcessLevelSettlement() {
-        log.info("~~~~~~~~~~ Starting Multi-threaded Batch Process (Threads: {})", threadCount);
+        // 計算總分片數 (例如 2 Pods * 3 Threads = 6)
+        int globalTotalPartitions = totalPods * threadCount;
+        log.info("Starting Batch: PodIndex={}, Replicas={}, GlobalPartitions={}", podIndex, totalPods, globalTotalPartitions);
 
         for (int i = 0; i < threadCount; i++) {
-            final int remainder = i;
+            int globalRemainder = (podIndex * threadCount) + i;
             executor.submit(() -> {
                 try {
-                    processPartition(remainder);
+                    processPartition(globalRemainder, globalTotalPartitions);
                 } catch (Exception e) {
-                    log.error("Thread for remainder {} failed", remainder, e);
+                    log.error("Thread for remainder {} failed", globalRemainder, e);
                 }
             });
         }
     }
 
-    private void processPartition(int remainder) {
-        log.info("[Thread-{}] Started. Handling money % {} == {}", remainder, threadCount, remainder);
+    private void processPartition(int globalRemainder, int globalTotalPartitions) {
+        String threadId = "Global-Part-" + globalRemainder;
+        log.info("[{}] Started. Query: money % {} == {}", threadId, globalTotalPartitions, globalRemainder);
 
-        String threadId = "Thread-" + remainder;
-
-
-        // 使用 MongoDB 的 $mod 運算子進行分區查詢
-        // 語法：{ field: { $mod: [ divisor, remainder ] } }
-        Query query = new Query(Criteria.where("money").mod(threadCount, remainder));
+        // 3. 關鍵查詢：使用全局分片邏輯，確保 Pod 之間不重疊
+        Query query = new Query(Criteria.where("money").mod(globalTotalPartitions, globalRemainder));
         query.cursorBatchSize(batchSize);
 
         int processedInThread = 0;
@@ -76,31 +97,22 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
         try (CloseableIterator<User> iterator = mongoTemplate.stream(query, User.class)) {
             while (iterator.hasNext()) {
                 User user = iterator.next();
-
-                // 計算邏輯
                 user.setLevel((int) (user.getMoney() % 3) + 1);
                 buffer.add(user);
                 processedInThread++;
 
                 if (buffer.size() >= batchSize) {
                     executeBulkUpdate(buffer, threadId);
-                    log.info("[Thread-{}] Bulk updated {} records. (Total: {})",
-                            remainder, buffer.size(), processedInThread);
+                    log.info("[{}] Processed total: {}", threadId, processedInThread);
                     buffer.clear();
-
-
                     Thread.sleep(5000);
                 }
             }
-            // 最後一聲哨音
-            if (!buffer.isEmpty()) {
-                executeBulkUpdate(buffer, threadId);
-            }
+            if (!buffer.isEmpty()) executeBulkUpdate(buffer, threadId);
         } catch (Exception e) {
-            log.error("[Thread-{}] Error during streaming", remainder, e);
+            log.error("[{}] Error", threadId, e);
         }
-
-        log.info("[Thread-{}] Finished. Total processed: {}", remainder, processedInThread);
+        log.info("[{}] Finished. Total: {}", threadId, processedInThread);
     }
 
     private void executeBulkUpdate(List<User> users, String threadId) {
