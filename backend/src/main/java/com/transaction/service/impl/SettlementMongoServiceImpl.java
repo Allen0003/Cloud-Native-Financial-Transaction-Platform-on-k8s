@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -32,6 +33,9 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
+
     @Value("${app.batch.size:10}")
     private int batchSize;
 
@@ -44,6 +48,8 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
     @Value("${app.pod.replicas:1}")
     private int totalPods;
 
+    @Value("${app.kafka.dlq-topic:settlement-dlq}")
+    private String dlqTopic;
 
     // 定義要開幾個執行緒（例如 3 個）
     private final int threadCount = 3;
@@ -97,9 +103,28 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
         try (CloseableIterator<User> iterator = mongoTemplate.stream(query, User.class)) {
             while (iterator.hasNext()) {
                 User user = iterator.next();
-                user.setLevel((int) (user.getMoney() % 3) + 1);
-                buffer.add(user);
-                processedInThread++;
+
+
+                // --- 單筆資料處理保護區 ---
+                try {
+                    // 模擬處理邏輯 (假設 money 為空或格式異常會噴 Exception)
+                    if (user.getMoney() == 7777) {
+                        throw new RuntimeException("Money field is null");
+                    }
+
+                    user.setLevel((int) (user.getMoney() % 3) + 1);
+                    buffer.add(user);
+                    processedInThread++;
+
+                } catch (Exception e) {
+                    log.info("[{}] GG  {}", user, e.getMessage());
+                    // 發生錯誤，直接丟往 Kafka DLQ，不中斷迴圈
+                    sendToDlq(user, e.getMessage(), threadId);
+                }
+
+//                user.setLevel((int) (user.getMoney() % 3) + 1);
+//                buffer.add(user);
+//                processedInThread++;
 
                 if (buffer.size() >= batchSize) {
                     executeBulkUpdate(buffer, threadId);
@@ -114,6 +139,27 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
         }
         log.info("[{}] Finished. Total: {}", threadId, processedInThread);
     }
+
+
+    /**
+     * 將處理失敗的資料丟入 Kafka DLQ
+     */
+    private void sendToDlq(User user, String errorMessage, String threadId) {
+        Map<String, Object> errorPayload = new HashMap<>();
+        errorPayload.put("userData", user.getUserId()); // 包含原始資料
+        errorPayload.put("error", errorMessage);
+        errorPayload.put("pod", podName);
+        errorPayload.put("thread", threadId);
+        errorPayload.put("timestamp", new Date());
+
+        // 使用 Kafka 發送，key 使用 userId 方便追蹤
+        kafkaTemplate.send(dlqTopic, String.valueOf(user.getId()), errorPayload.get("userData").toString())
+                .addCallback(
+                        result -> log.debug("Sent error data to DLQ for user: {}", user.getId()),
+                        ex -> log.error("Failed to send data to Kafka DLQ! User: {}", user.getId(), ex)
+                );
+    }
+
 
     private void executeBulkUpdate(List<User> users, String threadId) {
         BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, User.class);
