@@ -10,3 +10,5 @@ p4. kafka 1 partition 2 pod 刪除一個另一個自動接手
 p5: kafka 3 partitions 2 pod with 3 threads
 
 p6: mongo db sharding 2 pod with 3 threads
+
+p7: dlq
