@@ -41,7 +41,8 @@ Cloud-Native Financial Transaction Platform on Kubernetes
 8. 實作 DLQ (Dead Letter Queue)
 9. multi thread
 10. mongo DB 大資料 sharding 寫入 讀取
-
+11. 試看看HPA 地端 k8s    local 會把 cpu 操爆 先放棄
+12. keda (k8s event-driven autoscling)
 
 
 
