@@ -688,3 +688,15 @@ User2
 User3
 User4
 User5
+
+
+
+
+到這 目前應該連到了
+
+但是資料 還沒讀到
+
+
+[pod/financial-tx-764dff7c5b-ff2hh/app] 2026-04-02 02:27:57.033  INFO 1 --- [ntainer#0-0-C-1] c.t.consumer.SettlementKedaConsumer      : [KEDA-Process] Received User: User24
+[pod/financial-tx-764dff7c5b-ff2hh/app] 2026-04-02 02:27:57.120  WARN 1 --- [ntainer#0-0-C-1] c.t.consumer.SettlementKedaConsumer      : User User24 not found in MongoDB
+[pod/financial-tx-764dff7c5b-ff2hh/app] 2026-04-02 02:27:57.127  INFO 1 --- [ntainer#0-0-C-1] c.t.consumer.SettlementKedaConsumer      : [KEDA-Process] Received User: User25

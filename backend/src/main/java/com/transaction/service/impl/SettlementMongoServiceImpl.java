@@ -36,7 +36,7 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
-    @Value("${app.batch.size:10}")
+    @Value("${app.batch.size:3}")
     private int batchSize;
 
     @Value("${app.pod.name:local-dev-0}") // 預設給個帶數字的名字方便本地測試
@@ -52,7 +52,7 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
     private String dlqTopic;
 
     // 定義要開幾個執行緒（例如 3 個）
-    private final int threadCount = 3;
+    private final int threadCount = 2;
 
     // 建立執行緒池
     private final ExecutorService executor = Executors.newFixedThreadPool(threadCount);
@@ -122,15 +122,12 @@ public class SettlementMongoServiceImpl implements SettlementMongoService {
                     sendToDlq(user, e.getMessage(), threadId);
                 }
 
-//                user.setLevel((int) (user.getMoney() % 3) + 1);
-//                buffer.add(user);
-//                processedInThread++;
-
                 if (buffer.size() >= batchSize) {
                     executeBulkUpdate(buffer, threadId);
                     log.info("[{}] Processed total: {}", threadId, processedInThread);
                     buffer.clear();
                     Thread.sleep(5000);
+
                 }
             }
             if (!buffer.isEmpty()) executeBulkUpdate(buffer, threadId);
