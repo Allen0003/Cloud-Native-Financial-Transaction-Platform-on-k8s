@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: financial-tx
 spec:
-  replicas: 2
+  replicas: 0
   selector:
     matchLabels:
       app: financial-tx
@@ -16,6 +16,13 @@ spec:
         - name: app
           image: fin-serv:latest
           imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: "10m"       # 極低請求，確保能跑
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
           env:
             - name: HOSTNAME
               valueFrom:
@@ -30,6 +37,11 @@ spec:
               value: "host.docker.internal:29092"
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "host.docker.internal:29092"
+
+            - name: MONGODB_HOST
+              value: "host.docker.internal"
+            - name: MONGODB_PORT
+              value: "27017" # 確保這是你 Mongo 在 Docker Compose 開的 Port
           lifecycle:
             preStop:
               exec:

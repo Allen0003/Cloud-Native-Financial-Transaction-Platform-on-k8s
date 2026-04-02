@@ -1,0 +1,18 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: financial-tx-keda
+spec:
+  scaleTargetRef:
+    name: financial-tx
+  minReplicaCount: 0
+  maxReplicaCount: 5
+  pollingInterval: 5   # 每 5 秒檢查一次 Kafka (變快)
+  cooldownPeriod: 30    # 處理完後 30 秒就消失 (變快)
+  triggers:
+  - type: kafka
+    metadata:
+      bootstrapServers: host.docker.internal:29092
+      topic: settlement-topic3
+      consumerGroup: financial-group1
+      lagThreshold: "2"  # 只要有 2 筆訊息沒處理就開工
