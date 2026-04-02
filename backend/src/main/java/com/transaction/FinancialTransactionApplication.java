@@ -24,15 +24,13 @@ public class FinancialTransactionApplication {
         SpringApplication.run(FinancialTransactionApplication.class, args);
     }
 
-
-
     // 測試 mongo db 的 sharding, 因為已經在程式mod 做分工, 不需要去擋一次只有一個pod 可以做事
-    @Bean
-    CommandLineRunner testRun(SettlementJob job) {
-        return args -> {
-            job.runManual();
-        };
-    }
+//    @Bean
+//    CommandLineRunner testRun(SettlementJob job) {
+//        return args -> {
+//            job.runManual();
+//        };
+//    }
 
 
     //init 時做批次   只會有 1 個 pod 跑這一段

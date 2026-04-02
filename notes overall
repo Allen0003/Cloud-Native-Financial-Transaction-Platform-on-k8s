@@ -1,11 +1,24 @@
 
-https://www.104.com.tw/job/6ar3t?jobsource=google
+
+The University of Melbourne, Master, Information Technology, 2017 - 2018
+
  有分散式資料存儲技術的經驗，如：MongoDB、Elasticsearch
 
-中信
-1943Apss@
+XREX, Crypto.com, Amber Group,
+Coupang (酷澎), Appier (沛星), Sea Group (蝦皮), Line, Rakuten (樂天)
+AWS, Google Cloud, Microsoft (Azure), Oracle, Akamai
 
-https://ctbcholding.wd3.myworkdayjobs.com/External/job/-_JR116
+
+trend micro
+https://trendmicro.wd3.myworkdayjobs.com/en-US/External/job/Taipei/Sr-Engineer_R0009181/apply/autofillWithResume?source=LinkedIn
+
+
+
+熟悉 Generative AI 與 Agentic AI，並有實際開發、整合或落地經驗 
+◆ 熟悉至少一種雲端平台：Azure / GCP / AWS 
+◆ 熟悉 SDLC，理解如何把技術方案推進到可交付、可維運的系統 
+◆ 熟悉 Docker / Kubernetes (K8S) 等容器化技術 
+◆ 能規劃 AI 應用在 雲端、地端或混合架構 下的部署方案 
 
 
 ① 一個「能講 20 分鐘的雲端 / k8s 故事」（最重要）
@@ -402,6 +415,40 @@ README 完整說故事
 
 
 
+用python 做一個 side project 串 AI
+
+
+開啟新對話用的系統 Prompt
+
+請複製以下文字，開啟一個新的 Gemini 或 ChatGPT 對話：
+
+    Role: 你是一位精通 Python AI 工程與分散式系統的資深架構師。
+
+    Background: 我是一位擁有 10 年經驗的 Java Technical Lead，精通微服務、Kafka、Kubernetes、MongoDB 以及高併發系統設計。目前我對 Python、AI 與 RAG (Retrieval-Augmented Generation) 完全沒有經驗，但我目標是在短時間內轉職為 AI 系統架構師，負責將 AI 導入企業級應用（如 IC 設計流程支援）。
+
+    Mission: 請開啟一個「AI 工程師衝刺計畫」。請不要從基礎語法（如什麼是變數）開始教，請用 「Java 開發者的視角」 與 「系統架構的層級」 來引導我。
+
+    Learning Path:
+
+        Python 快速遷移： 用 Java 的 OOP、Dependency Injection、Threading 概念來對比解釋 Python 的實作。
+
+        RAG 核心架構： 解釋 Embedding, Vector Database, Context Window。
+
+        AI Frameworks： 實戰導向學習 LangChain 與 LangGraph，建構 AI Agent。
+
+        AI MLOps： 如何將 AI Repo 部署至 Docker/K8s 並進行量化效益驗證。
+
+    Rules:
+
+        每個單元都要有實作練習。
+
+        解釋時請多用「這在 Java 就像是...」的類比。
+
+        優先教我如何「使用 SOTA 模型與 API」而非「訓練模型」。
+
+    First Step: 請先幫我對比 Python 的異步處理 (asyncio) 與 Java 的 CompletableFuture / Virtual Threads，並給我第一個簡單的 RAG 概念圖，告訴我作為系統架構師，我最應該關注 RAG 的哪個環節。
+
+
 
 
 
@@ -593,3 +640,51 @@ docker exec -it kafka-zoo-kafka-1 kafka-topics \
 改完 partition 參數 要先 刪掉 舊的topic
 
 docker exec -it kafka-zoo-kafka-1 kafka-topics --delete --topic settlement-events --bootstrap-server localhost:9092
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------
+
+
+
+
+
+
+好了 看到 pod 有往上跑了
+
+整理一下 我幹了什麼 有缺你跟我說
+
+
+keda (k8s event-driven autoscling)
+
+1. 增加一個 k8s ScaledObject, 他會去抓 deployment 然後做
+
+會同時起幾個pod 決定在 kafka partition 數量 (參數 跟 new topic 都可以條)
+k8s ScaledObject 裡面也有決定最大數量
+
+
+kafka 空的時候 pod 為 0
+
+
+SettlementKedaServiceImpl
+
+
+User1
+User2
+User3
+User4
+User5
