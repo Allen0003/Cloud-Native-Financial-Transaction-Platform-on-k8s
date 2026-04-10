@@ -669,34 +669,72 @@ docker exec -it kafka-zoo-kafka-1 kafka-topics --delete --topic settlement-event
 整理一下 我幹了什麼 有缺你跟我說
 
 
+-- Kafka 的 Topic 像是永不回頭的輸送帶，訊息編號（Offset）是一直往後累加的，永遠不會倒退。
+
+
 keda (k8s event-driven autoscling)
 
-1. 增加一個 k8s ScaledObject, 他會去抓 deployment 然後做
+keda 為 k8s 的 plugin 安裝完後 重開機就會自動起來
+
+
+0. deployment 跟 ScaledObject 這個重開機 重啟 k8s 都還會在
+
+1. 增加一個 k8s ScaledObject, 他會去抓 設定的 deployment 然後
+
+用kafka 當作event 去驅動 pod 的數目
+
+2. yaml 裡面有 consumerGroup: financial-group1
+
+要跟程式一樣
+
+@KafkaListener(topics = "settlement-topic3", groupId = "financial-group1", concurrency = "3"
+
+3. KEDA 的運作原理是去修改 Deployment 的 spec.replicas。刪除 ScaledObject ，KEDA 就「放手」了，它不會在臨走前幫你把數量改回 0。
+
+4. 有意外的產生三個 pod
+
+因為 kafka 從 Offset 18, 但是執行 Clear Messages，Kafka 的 First Offset 已經跳到了 24
+只要 Lag 大於你設定的 lagThreshold: 2，KEDA 就會立刻啟動 Pod。而在 K8s 內部，如果指標（Metrics）因為這種重設而卡住，HPA 就會一直維持在 3 個 Pod。
+
+5. 要在程式裡面丟
+
+ ack.acknowledge(); // 成功處理後手動提交
+
+告訴 kafka 東西做完了
+
+6. 分散式處理
+
+KEDA 負責「廣度」： 看到 Lag 太高，就多開幾個 Pod（前提是有夠多的 Partition）。對應到 partition
+
+Batch 負責「深度」： 讓單一 Pod 每次拉取（Poll）時，不是只拿 1 筆，而是拿一大捆（例如 100 筆）回來。
+
 
 會同時起幾個pod 決定在 kafka partition 數量 (參數 跟 new topic 都可以條)
-k8s ScaledObject 裡面也有決定最大數量
 
+k8s ScaledObject 裡面也有決定最大數量
 
 kafka 空的時候 pod 為 0
 
 
-SettlementKedaServiceImpl
-
-
-User1
-User2
-User3
-User4
-User5
 
 
 
 
-到這 目前應該連到了
-
-但是資料 還沒讀到
 
 
-[pod/financial-tx-764dff7c5b-ff2hh/app] 2026-04-02 02:27:57.033  INFO 1 --- [ntainer#0-0-C-1] c.t.consumer.SettlementKedaConsumer      : [KEDA-Process] Received User: User24
-[pod/financial-tx-764dff7c5b-ff2hh/app] 2026-04-02 02:27:57.120  WARN 1 --- [ntainer#0-0-C-1] c.t.consumer.SettlementKedaConsumer      : User User24 not found in MongoDB
-[pod/financial-tx-764dff7c5b-ff2hh/app] 2026-04-02 02:27:57.127  INFO 1 --- [ntainer#0-0-C-1] c.t.consumer.SettlementKedaConsumer      : [KEDA-Process] Received User: User25
+
+User28
+User29
+User32
+
+User33
+User49
+User50
+
+User34
+User35
+User52
+
+目前卡在不知道為什麼 pod 沒有平行處理 kafka 的 partition
+
+
