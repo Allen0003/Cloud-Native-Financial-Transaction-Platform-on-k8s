@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -38,13 +39,18 @@ public class SettlementKedaConsumer {
     }
 
     // KEDA 模式下，建議直接由 Kafka Listener 觸發，而非由外部排程觸發 batch
-    @KafkaListener(topics = "settlement-topic3", groupId = "financial-group1", concurrency = "3")
-    public void onMessage(ConsumerRecord<String, String> record) {
+    @KafkaListener(topics = "settlement-topic3", groupId = "financial-group1", concurrency = "1")
+    public void onMessage(ConsumerRecord<String, String> record, Acknowledgment ack) {
         String userId = record.value();
         log.info("[KEDA-Process] Received User: {}", userId);
 
+        log.info("[KEDA-DEBUG] Pod: {} 正在處理 Partition: {} 的訊息: {}",
+                podName, record.partition(), record.value());
+
         try {
+            Thread.sleep(10000 * 5);
             updateUserLevel(userId);
+            ack.acknowledge(); // 成功處理後手動提交
         } catch (Exception e) {
             log.error("[KEDA-Error] Failed to process UserID: {}", userId, e);
         }
@@ -53,7 +59,7 @@ public class SettlementKedaConsumer {
 
     private void updateUserLevel(String userId) {
         // 1. 定義查詢條件 (務必匹配你的 Shard Key)
-        Query query = new Query(Criteria.where("Id").is(userId));
+        Query query = new Query(Criteria.where("userid").is(userId));
 
         // 2. 模擬結算邏輯 (這裡先抓出 User 資料來計算 Level)
         User user = mongoTemplate.findOne(query, User.class);
