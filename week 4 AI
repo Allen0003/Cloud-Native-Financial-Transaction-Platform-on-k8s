@@ -1,0 +1,98 @@
+
+
+
+
+week4 prompt
+我正在做一個專案：
+
+Cloud-Native Financial Transaction Platform on Kubernetes
+
+目前進度：
+
+- Spring Boot transaction API
+- create transaction（含 idempotency key）
+- query transaction API
+- MySQL schema（transactions table）
+- TransactionStatus enum（含狀態流轉）
+- optimistic locking（@Version）
+- Spring Boot Actuator（readiness / liveness）
+- Dockerfile 已完成（可 container run）
+
+技術棧：
+- Java / Spring Boot
+- MySQL
+- Docker
+- 之後會上 AWS EKS + GitHub Actions
+
+現在我要開始 Week 4:
+
+🎯 目標：
+增加串 AI
+
+Agentic AI（代理型 AI）： 這是 2026 年最火紅的領域。後端工程師要學的是如何把 Java 服務與 LLM 串接，建立能自動執行任務的「AI 代理」。
+
+Vector Databases（向量資料庫）： 學會如何處理 RAG（檢索增強生成），讓企業內部資料能被 AI 使用。
+
+RPA 與自動化： 像你之前設計的「自動告警與重啟系統」，如果能加入 AI 判斷 log 異常原因，價值會翻倍。
+
+
+
+
+
+
+
+
+🚀 專案上下文快照 (Project Context Snapshot)
+
+專案名稱： Cloud-Native Financial Transaction Platform on Kubernetes
+1. 目前技術棧與進度
+
+    後端框架： Java 21 / Spring Boot 3.2.x
+
+    資料庫： MySQL (InnoDB) + MongoDB Sharded Cluster (用於 2TB 規模資料處理預研)
+
+    基礎設施： * Docker / Docker Compose (Local Dev)
+
+        Kubernetes (EKS 預備)
+
+        KEDA： 已成功實作基於 Kafka Lag 的 Pod 自動縮放 (ScaledObject 配置完成)
+
+    訊息隊列： Kafka (已整合並處理過 Partition 分流、Rebalance 與 Consumer Group 調校問題)
+
+2. 已實作的核心功能
+
+    交易系統： 含 Idempotency Key 處理、@Version 樂觀鎖、TransactionStatus 狀態機
+
+    監控： Spring Boot Actuator (Readiness/Liveness probes)
+
+    CI/CD： 已完成 GitHub Actions + Render 的多容器部署流程
+
+    雲端認證： 已具備 AWS SAA 證照背景知識
+
+🎯 Week 4：Agentic AI & RAG 整合計畫
+
+針對你提到的 2026 年 Agentic AI 趨勢，建議我們從 Spring AI 或 LangChain4j 切入，這是目前 Java 生態系整合 LLM 的主流方式。
+核心實作方向
+
+    AI 異常分析 Agent： * 當系統發生交易失敗或 KEDA 擴容異常時，由 AI Agent 讀取日誌（Log）並調用你現有的 API 進行初步排查與自動修復建議。
+
+    RAG 向量檢索整合： * 將金融法規、交易處理 SOP 存入向量資料庫（如 Milvus 或 pgvector）。
+
+        實作「AI 客服/營運助手」，讓管理員可以用自然語言查詢「為什麼 User64 的交易被拒絕？」。
+
+    Spring AI Function Calling： * 讓 AI 直接「具備能力」去執行你的 queryTransactionAPI。
+
+下一個 Chat 的啟動 Prompt 建議：
+
+    「我正在開發一個 Cloud-Native 金融平台，目前進度已完成 Spring Boot 交易核心、Kafka+KEDA 自動縮放、與 MongoDB 整合。現在進入 Week 4，目標是增加 Agentic AI 功能。請協助我：
+
+        如何在 Spring Boot 中整合 LangChain4j 或 Spring AI。
+
+        設計一個『日誌異常分析 Agent』，當 Kafka 發生嚴重 Lag 或交易失敗時能自動分析原因。
+
+        如何將我的交易歷史數據向量化，實作簡單的 RAG 查詢。」
+
+
+
+
+
