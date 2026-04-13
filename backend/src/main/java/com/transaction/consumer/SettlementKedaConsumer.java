@@ -48,7 +48,7 @@ public class SettlementKedaConsumer {
                 podName, record.partition(), record.value());
 
         try {
-            Thread.sleep(10000 * 5);
+            Thread.sleep(10000 * 3);
             updateUserLevel(userId);
             ack.acknowledge(); // 成功處理後手動提交
         } catch (Exception e) {

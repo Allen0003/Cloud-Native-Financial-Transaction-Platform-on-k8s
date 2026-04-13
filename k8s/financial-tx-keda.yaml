@@ -6,7 +6,7 @@ spec:
   scaleTargetRef:
     name: financial-tx
   minReplicaCount: 0
-  maxReplicaCount: 5
+  maxReplicaCount: 3
   pollingInterval: 5   # 每 5 秒檢查一次 Kafka (變快)
   cooldownPeriod: 30    # 處理完後 30 秒就消失 (變快)
   triggers:
