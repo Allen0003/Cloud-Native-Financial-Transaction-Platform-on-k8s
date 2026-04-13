@@ -11,4 +11,7 @@ p5: kafka 3 partitions 2 pod with 3 threads
 
 p6: mongo db sharding 2 pod with 3 threads
 
-p7: dlq
+p7: dlq using kafka
+
+P8: keda (k8s Event-driven Autoscaling) + Kafka 3 partitions
+p8-1: 自動 scale 到 3 pods
