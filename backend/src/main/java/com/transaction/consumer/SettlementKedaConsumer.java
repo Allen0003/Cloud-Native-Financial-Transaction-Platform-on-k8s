@@ -18,7 +18,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.Date;
 
-@Service
+//@Service
+// 註解掉讓init 不會跑
 public class SettlementKedaConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(SettlementKedaConsumer.class);
