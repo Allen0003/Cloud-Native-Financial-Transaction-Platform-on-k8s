@@ -14,6 +14,10 @@ https://trendmicro.wd3.myworkdayjobs.com/en-US/External/job/Taipei/Sr-Engineer_R
 
 
 
+https://www.1111.com.tw/job/130359133
+AL-[金控]雲端 Cloud-Native 技術架構師，年薪新台幣1.5M~2M
+
+
 熟悉 Generative AI 與 Agentic AI，並有實際開發、整合或落地經驗 
 ◆ 熟悉至少一種雲端平台：Azure / GCP / AWS 
 ◆ 熟悉 SDLC，理解如何把技術方案推進到可交付、可維運的系統 
@@ -648,42 +652,5 @@ docker exec -it kafka-zoo-kafka-1 kafka-topics --delete --topic settlement-event
 
 
 
-
-
-
-
-
-
-
-
-
--------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-User28
-User29
-User32
-
-User33
-User49
-User50
-
-User34
-User35
-User52
-
-目前卡在不知道為什麼 pod 沒有平行處理 kafka 的 partition
 
 
