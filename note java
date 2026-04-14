@@ -3,7 +3,14 @@ financial-transaction-service/
 ├── src/
 │   ├── main/
 │   │   ├── java/
-│   │   │   └── com/
+│   │   │   └── com/allen/transaction/
+│   │   │       │
+│   │   │       ├──  ai/
+│   │   │       │     ├── FinancialAgent.java      (AI 接口定義，即 Agent 的大腦)
+│   │   │       │     ├── TransactionTools.java    (AI 可調用的工具，即 Agent 的手)
+│   │   │       │     └── config/
+│   │   │       │           └── LangChain4jConfig.java (配置 LLM 參數與 Vector Store)
+│   │   │       │
 │   │   │       └── allen/
 │   │   │           └── transaction/
 │   │   │               │
