@@ -41,7 +41,6 @@ RPA 與自動化： 像你之前設計的「自動告警與重啟系統」，如
 
 
 
-
 🚀 專案上下文快照 (Project Context Snapshot)
 
 專案名稱： Cloud-Native Financial Transaction Platform on Kubernetes
@@ -91,6 +90,23 @@ RPA 與自動化： 像你之前設計的「自動告警與重啟系統」，如
         設計一個『日誌異常分析 Agent』，當 Kafka 發生嚴重 Lag 或交易失敗時能自動分析原因。
 
         如何將我的交易歷史數據向量化，實作簡單的 RAG 查詢。」
+
+
+
+
+Ollama 免費的LLM
+
+1. 用 docker 起 Ollama 然後用 Qwen 機器人
+
+2. 導入 LangChain4j pom 裡面就有
+
+3. RAG (Retrieval-Augmented Generation)
+i. 檢索 (Retrieval) 根據問題去資料庫找資料。  使用 Vector Database (如 pgvector, Milvus) 進行語意搜尋。
+
+ii. 增強 (Augmentation)   把找到的資料併入你的 Prompt。  把交易 Log 轉成文字："這是該用戶過去三天的交易：..."
+
+iii. 生成 (Generation) AI 根據 Prompt 生成答案。  LLM (如你的 Qwen) 讀取上下文並回答。
+
 
 
 

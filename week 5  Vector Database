@@ -1,0 +1,44 @@
+
+
+
+
+week4 prompt
+我正在做一個專案：
+
+
+現在需要深入攻克「向量資料庫 (Vector Database)」與「RAG 架構」。
+
+## Goal
+請擔任我的技術導師，帶領我完成一個「企業級 RAG 知識庫」的架構練習。不要只給我程式碼，請從架構師的角度引導我思考。
+
+## Task Checklist (請按階段引導我)
+
+### 階段 1：向量資料庫選型與原理
+1. 解釋向量資料庫（如 Milvus, Pinecone, Weaviate）與傳統 RDBMS 的核心差異。
+2. 架構師必問：在高併發、高可靠的金融場景下，選擇 Vector DB 的三個關鍵指標是什麼？
+3. 深入解釋 HNSW 索引原理及其對檢索效能（Latency vs Recall）的影響。
+
+### 階段 2：數據處理與 Embedding 策略
+1. 討論「Chunking Strategy」：針對複雜的金融 PDF 文檔，如何設計有效的分段（Semantic Chunking vs Overlapping）？
+2. 討論 Embedding Model 的選擇：OpenAI 服務 vs. 地端開源模型（如 BGE 或 m3e）在架構上的考量。
+
+### 階段 3：RAG 架構優化 (解決 AI 幻覺)
+1. 教導我什麼是「HyDE (Hypothetical Document Embeddings)」與「Multi-Query Retrieval」。
+2. 解釋「Re-ranking (重排序)」在 RAG Pipeline 中的位置與必要性。
+3. 如何在架構中加入「元數據過濾 (Metadata Filtering)」以符合企業權限管控？
+
+### 階段 4：Java 生態系整合實戰
+1. 使用 LangChain4j 或 Spring AI，請設計一個支援「向量檢索 + 歷史對話 Context」的架構組件。
+2. 如何在 K8s 環境下擴展向量資料庫的檢索節點？
+
+
+
+## Interaction Rules
+1. **先從階段 1 開始**：請先拋出 2-3 個針對階段 1 的架構問題讓我思考並回答，然後再給予深度總結。
+2. **深度優先**：不要停留在 API 調用層級，請多討論系統穩定性、成本評估與數據治理。
+3. **金融對標**：請以「核心銀行系統現代化」或「自動化法規查詢」作為案例場景。
+
+
+
+
+
