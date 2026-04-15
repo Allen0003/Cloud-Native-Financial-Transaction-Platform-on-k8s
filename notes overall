@@ -14,8 +14,22 @@ https://trendmicro.wd3.myworkdayjobs.com/en-US/External/job/Taipei/Sr-Engineer_R
 
 
 
+
 https://www.1111.com.tw/job/130359133
 AL-[金控]雲端 Cloud-Native 技術架構師，年薪新台幣1.5M~2M
+
+
+重點： 考驗你對「絞殺者模式（Strangler Fig Pattern）」或數據一致性的理解，如何平衡新舊系統並行。
+
+2. 關於「雲端架構與分散式系統」
+
+    問題： 你的 Side Project 提到處理「高併發」的分散式鎖定機制 ，在金融場景下，如何確保在高併發時的資料絕對準確（Data Integrity）？
+
+問題： 面對多雲環境（GCP/AWS/Azure），你會如何設計一個具備可移植性（Portability）的解決方案？
+
+
+
+
 
 
 熟悉 Generative AI 與 Agentic AI，並有實際開發、整合或落地經驗 
