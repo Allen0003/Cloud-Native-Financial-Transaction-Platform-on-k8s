@@ -46,4 +46,16 @@ public class TransactionResponse {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+    @Override
+    public String toString() {
+        return "TransactionResponse{" +
+                "transactionId='" + transactionId + '\'' +
+                ", userId=" + userId +
+                ", amount=" + amount +
+                ", currency='" + currency + '\'' +
+                ", status='" + status + '\'' +
+                ", createdAt=" + createdAt +
+                '}';
+    }
 }

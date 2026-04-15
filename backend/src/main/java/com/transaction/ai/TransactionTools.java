@@ -15,10 +15,8 @@ public class TransactionTools {
 
     private  TransactionService transactionService;
 
-    @Tool("根據交易 ID (transactionId) 查詢詳細資訊")
+//    @Tool("根據交易 ID (transactionId) 查詢詳細資訊")
     public TransactionResponse getTransactionDetails(String transactionId) {
-
-        System.out.println("i am here ~~~");
 
         return transactionService.getTransaction(transactionId);
     }
