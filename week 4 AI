@@ -109,6 +109,26 @@ iii. 生成 (Generation) AI 根據 Prompt 生成答案。  LLM (如你的 Qwen) 
 
 
 
+玩法一：從「手動餵資料」升級為「Function Calling」
+
+你把問題丟給 AI -> AI 發現資料不夠 -> AI 自己決定去呼叫你的 Java Method -> AI 拿到資料後回答。
+
+
+測試路徑： GET /api/ai/chat?msg=幫我看看交易 TX9527 為什麼失敗了？
+
+    Llama-3.2 會分析這句話，發現裡面有 TX9527。
+
+    它會比對工具庫，發現 getTransactionDetails 符合需求。
+
+    它會自動產生一組 JSON 給 Ollama 執行。
+
+    你的 Java 程式碼執行 transactionService.getTransaction("TX9527")。
+
+    AI 拿到結果後，再用繁體中文回覆你。
+
+
+
+玩法三：AI 異常分析 Agent (實戰價值最高)
 
 
 
